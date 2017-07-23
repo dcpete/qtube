@@ -1,25 +1,43 @@
-const User = require('mongoose').model('User');
-const PassportLocalStrategy = require('passport-local').Strategy;
+var User                      = require('../../models/model_user');
+const PassportLocalStrategy   = require('passport-local').Strategy;
 
-/**
- * Return the Passport Local Strategy object.
- */
 module.exports = new PassportLocalStrategy({
+  // override Passport's default username field
   usernameField: 'email',
   passwordField: 'password',
+  // use jwt instead of sessions
   session: false,
   passReqToCallback: true
 }, (req, email, password, done) => {
-  const userData = {
-    email: email.trim(),
-    password: password.trim(),
-    name: req.body.name.trim()
-  };
+  // User.findOne wont fire unless data is sent back
+  //process.nextTick(function () {
 
-  const newUser = new User(userData);
-  newUser.save((err) => {
-    if (err) { return done(err); }
+    // check if this email has already been used to create a user
+    User.findOne({'email': email }, function (err, user) {
+      // if there are any errors, return the error
+      if (err)
+        return done(err);
+      if (user) {
+        const error = new Error('That email is already taken.');
+        error.name = 'DuplicateUserError';
+        return done(error);
+      }
+      else {
+        // create new user
+        var newUser = new User();
 
-    return done(null);
-  });
+        // set the user's local credentials
+        newUser.email = email;
+        newUser.local.password = newUser.hashPassword(password);
+        newUser.username = req.body.username;
+
+        // save the user
+        newUser.save(function (err) {
+          if (err)
+            throw err;
+          return done(null, newUser);
+        });
+      }
+    });
+  //});
 });

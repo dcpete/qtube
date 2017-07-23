@@ -12,13 +12,9 @@ module.exports = new PassportLocalStrategy({
   session: false,
   passReqToCallback: true
 }, (req, email, password, done) => {
-  const userData = {
-    email: email.trim(),
-    password: password.trim()
-  };
 
   // find a user by email address
-  return User.findOne({ email: userData.email }, (err, user) => {
+  return User.findOne({ 'email': email }, (err, user) => {
     if (err) { return done(err); }
 
     if (!user) {
@@ -29,7 +25,7 @@ module.exports = new PassportLocalStrategy({
     }
 
     // check if a hashed user's password is equal to a value saved in the database
-    return user.comparePassword(userData.password, (passwordErr, isMatch) => {
+    return user.comparePassword(password, (passwordErr, isMatch) => {
       if (err) { return done(err); }
 
       if (!isMatch) {
@@ -46,7 +42,7 @@ module.exports = new PassportLocalStrategy({
       // create a token string
       const token = jwt.sign(payload, jwtconfig.secret);
       const data = {
-        name: user.name
+        username: user.username
       };
 
       return done(null, token, data);
