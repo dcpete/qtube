@@ -13,4 +13,6 @@ module.exports.connect = (uri) => {
 
   // load models
   require('./model_user');
+  require('./model_channel');
+  require('./model_youtube_video');
 };

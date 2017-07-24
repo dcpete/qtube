@@ -1,6 +1,6 @@
-var mongoose = require('mongoose'),
+const mongoose = require('mongoose');
 
-var channelSchema = mongoose.Schema({
+const channelSchema = mongoose.Schema({
   created: {
     type: Date,
     default: Date.now
@@ -9,13 +9,18 @@ var channelSchema = mongoose.Schema({
     type: String,
     default: ''
   },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   playlist: [{
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'YoutubeVideo'
   }],
   currentVideo: {
-    type: Schema.Types.ObjectId,
-    ref: 'YoutubeVideo'
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'YoutubeVideo',
+    default: null
   },
   currentVideoStarted: {
     type: Date,
@@ -27,4 +32,4 @@ var channelSchema = mongoose.Schema({
   }
 });
 
-mongoose.model('Channel', channelSchema);
+module.exports = mongoose.model('Channel', channelSchema);

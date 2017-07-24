@@ -1,6 +1,6 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-var youtubeVideoSchema = mongoose.Schema({
+const youtubeVideoSchema = mongoose.Schema({
   created: {
     type: Date,
     default: Date.now
@@ -26,8 +26,8 @@ var youtubeVideoSchema = mongoose.Schema({
     default: 0
   },
   addedby: {
-    type: Schema.Types.ObjectId,
-    ref: User
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   playcount: {
     type: Number,
@@ -42,4 +42,4 @@ function validateLength (v) {
   return v.length === 11;
 }
 
-mongoose.model('YoutubeVideo', youtubeVideoSchema);
+module.exports = mongoose.model('YoutubeVideo', youtubeVideoSchema);
