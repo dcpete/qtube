@@ -8,6 +8,8 @@ const bodyParser  = require('body-parser');
 const morgan      = require('morgan');
 const passport    = require('passport');
 const path        = require('path');
+const fs          = require('fs');
+const rfs         = require('rotating-file-stream');
 
 // custom includes
 const models      = require('./models');
@@ -28,8 +30,16 @@ models.connect(dbconfig.uri);
 // tell Express to parse HTTP body messages
 express.use(bodyParser.urlencoded({ extended: false }));
 
-// logger config
-express.use(morgan(logConfig.format));
+// create logs directory
+fs.existsSync(logConfig.directory) || fs.mkdirSync(logConfig.directory)
+// use a rotating write stream
+const accessLogStream = rfs('access.log', {
+  interval: logConfig.interval, // rotate daily
+  path: logConfig.directory,
+  maxFiles: logConfig.maxFiles
+})
+// initialize logger
+express.use(morgan('combined', {stream: accessLogStream}))
 
 // passport config
 express.use(passport.initialize());
