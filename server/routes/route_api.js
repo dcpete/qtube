@@ -1,18 +1,10 @@
-const express     = require('express');
+const express      = require('express');
 const Channel     = require('../models/model_channel');
 const User        = require('../models/model_user');
 const validator   = require('validator');
 const _           = require('lodash');
 
 const router      = new express.Router();
-
-// Test route for authentication
-router.get('/dashboard', (req, res) => {
-  console.log("user: " + req.user);
-  res.status(200).json({
-    message: "You're authorized to see this secret message"
-  });
-});
 
 /*
 ========================================
@@ -125,8 +117,6 @@ router.delete('/channels/:channelid', (req, res, next) => {
     .findById(channelid)
     .populate('owner')
     .exec((error, channel) => {
-      console.log(channel.owner._id.toString());
-      console.log(req.user._id);
       // Return 500 for error querying channel
       if (error) {
         console.log("Error: " + error);
@@ -142,7 +132,6 @@ router.delete('/channels/:channelid', (req, res, next) => {
       }
       // Return 403 if user does not own channel  
       else if (channel.owner._id.toString() !== req.user._id.toString()) {
-        console.log('yarp');
         return res.status(403).json({
           message: 'User does not own channel'
         });
@@ -217,8 +206,6 @@ router.delete('/users/:userid', (req, res, next) => {
   User
     .findById(userid)
     .exec((error, user) => {
-      console.log("User from request - " + req.user)
-      console.log("User to delete - " + user);
       // Return 500 for error querying user
       if (error) {
         console.log("Error: " + error);
