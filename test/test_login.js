@@ -1,9 +1,9 @@
-const config = require('./test_config');
+const config          = require('./test_config');
 
-const expect = require("chai").expect;
-const server = require("supertest").agent(config.uri);
+const expect          = require("chai").expect;
+const server          = require("supertest").agent(config.uri);
 
-const createTestUser = require('./test_signup').createTestUser;
+const createTestUser  = require('./test_signup').createTestUser;
 
 const logInTestUser = (email, password, callback) => {
   return server

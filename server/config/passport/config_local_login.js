@@ -4,7 +4,7 @@ const PassportLocalStrategy   = require('passport-local').Strategy;
 const jwtconfig               = require('../config_jwt');
 
 /**
- * Return the Passport Local Strategy object.
+ * Passport Local Strategy for logging in a user
  */
 module.exports = new PassportLocalStrategy({
   usernameField: 'email',

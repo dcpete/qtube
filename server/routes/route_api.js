@@ -1,4 +1,4 @@
-const express      = require('express');
+const express     = require('express');
 const Channel     = require('../models/model_channel');
 const User        = require('../models/model_user');
 const validator   = require('validator');

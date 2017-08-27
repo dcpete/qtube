@@ -1,10 +1,10 @@
-const config = require('./test_config');
+const config          = require('./test_config');
 
-const expect = require("chai").expect;
-const server = require("supertest").agent(config.uri);
+const expect          = require("chai").expect;
+const server          = require("supertest").agent(config.uri);
 
-const createTestUser = require('./test_signup').createTestUser;
-const logInTestUser = require("./test_login").logInTestUser;
+const createTestUser  = require('./test_signup').createTestUser;
+const logInTestUser   = require("./test_login").logInTestUser;
 
 const deleteTestUser = (userid, token, callback) => {
   return server

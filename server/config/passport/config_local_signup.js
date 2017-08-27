@@ -2,6 +2,9 @@ const User                    = require('../../models/model_user');
 const PassportLocalStrategy   = require('passport-local').Strategy;
 const getToken                = require('../../middleware/middle_jwt').getToken;
 
+/**
+ * Passport Local Strategy for creating a new user
+ */
 module.exports = new PassportLocalStrategy({
   // override Passport's default username field
   usernameField: 'username',
