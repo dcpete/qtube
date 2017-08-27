@@ -1,10 +1,13 @@
-const mongoose    = require('mongoose');
-const bcrypt      = require('bcrypt');
-
+const mongoose      = require('mongoose');
+const bcrypt        = require('bcrypt');
+const bcryptConfig  = require('../config/config_bcrypt');
 const numSaltRounds = 8;
 
 const UserSchema = new mongoose.Schema({
-  username: String,
+  username: {
+    type: String,
+    index: { unique: true }
+  },
   email: {
     type: String,
     index: { unique: true }
@@ -21,7 +24,7 @@ UserSchema.methods.comparePassword = function comparePassword(password, callback
 
 // Model method to hash the password
 UserSchema.methods.hashPassword = function hashPassword(password) {
-  return bcrypt.hashSync(password, bcrypt.genSaltSync(numSaltRounds));
+  return bcrypt.hashSync(password, bcrypt.genSaltSync(bcryptConfig.numSaltRounds));
 }
 
 module.exports = mongoose.model('User', UserSchema);

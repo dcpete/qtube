@@ -1,12 +1,29 @@
 const jwt         = require('jsonwebtoken');
-const User        = require('mongoose').model('User');
-const jwtconfig   = require('../config/jwt');
-
+const User        = require('../models/model_user');
+const jwtconfig   = require('../config/config_jwt');
 
 /**
- *  The Auth Checker middleware function.
+ * Generate an authentication token for a valid user
  */
-module.exports = (req, res, next) => {
+const getToken = (user, next) => {
+  const payload = {
+    sub: user._id
+  };
+
+  // create a token string
+  const token = jwt.sign(payload, jwtconfig.secret);
+
+  return next(token);
+}
+
+/**
+ *  Check the authentication token for a valid user
+ */
+const checkToken = (req, res, next) => {
+  if (req.method == "GET") {
+    return next();
+  }
+
   if (!req.headers.authorization) {
     return res.status(401).end();
   }
@@ -34,3 +51,6 @@ module.exports = (req, res, next) => {
     });
   });
 };
+
+exports.checkToken = checkToken;
+exports.getToken = getToken;

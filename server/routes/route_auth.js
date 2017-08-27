@@ -1,6 +1,7 @@
-const express = require('express');
-const validator = require('validator');
-const passport = require('passport');
+const express     = require('express');
+const validator   = require('validator');
+const passport    = require('passport');
+const _           = require('lodash');
 
 const router = new express.Router();
 
@@ -11,7 +12,7 @@ const router = new express.Router();
  * @returns {object} The result of validation. Object contains a boolean validation result,
  *                   errors tips, and a global message for the whole form.
  */
-function validateSignupForm(payload) {
+const validateSignupForm = (payload) => {
   const errors = {};
   let isFormValid = true;
   let message = '';
@@ -49,7 +50,7 @@ function validateSignupForm(payload) {
  * @returns {object} The result of validation. Object contains a boolean validation result,
  *                   errors tips, and a global message for the whole form.
  */
-function validateLoginForm(payload) {
+const validateLoginForm = (payload) => {
   const errors = {};
   let isFormValid = true;
   let message = '';
@@ -75,6 +76,9 @@ function validateLoginForm(payload) {
   };
 }
 
+/**
+ * Sign up (create) a user
+ */
 router.post('/signup', (req, res, next) => {
   const validationResult = validateSignupForm(req.body);
   if (!validationResult.success) {
@@ -85,16 +89,14 @@ router.post('/signup', (req, res, next) => {
     });
   }
 
-  return passport.authenticate('local-signup', (err) => {
+  return passport.authenticate('local-signup', (err, user, token) => {
     if (err) {
       // Handle duplicate user error
       if (err.name === 'DuplicateUserError') {
         return res.status(409).json({
           success: false,
           message: 'Check the form for errors.',
-          errors: {
-            email: 'A user has already been created with this email address.'
-          }
+          errors: err.details
         });
       }
 
@@ -108,11 +110,16 @@ router.post('/signup', (req, res, next) => {
     // Successful user creation
     return res.status(200).json({
       success: true,
-      message: 'You have successfully signed up! Now you should be able to log in.'
+      message: 'You have successfully signed up!',
+      user: _.omit(user.toJSON(), 'local'),
+      token
     });
   })(req, res, next);
 });
 
+/**
+ * Authenticate a user
+ */
 router.post('/login', (req, res, next) => {
   const validationResult = validateLoginForm(req.body);
   if (!validationResult.success) {
@@ -123,11 +130,10 @@ router.post('/login', (req, res, next) => {
     });
   }
 
-
-  return passport.authenticate('local-login', (err, token, userData) => {
+  return passport.authenticate('local-login', (err, user, token) => {
     if (err) {
       if (err.name === 'IncorrectCredentialsError') {
-        return res.status(400).json({
+        return res.status(401).json({
           success: false,
           message: err.message
         });
@@ -139,12 +145,11 @@ router.post('/login', (req, res, next) => {
       });
     }
 
-
     return res.json({
       success: true,
       message: 'You have successfully logged in!',
       token,
-      user: userData
+      user: _.omit(user.toJSON(), 'local')
     });
   })(req, res, next);
 });
