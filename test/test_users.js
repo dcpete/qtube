@@ -6,9 +6,9 @@ const server          = require("supertest").agent(config.uri);
 const createTestUser  = require('./test_signup').createTestUser;
 const logInTestUser   = require("./test_login").logInTestUser;
 
-const deleteTestUser = (userid, token, callback) => {
+const deleteTestUser = (token, callback) => {
   return server
-    .delete("/api/users/" + userid)
+    .delete("/api/users")
     .set("Authorization", "Bearer " + token)
     .end((err, res) => {
       return typeof callback === 'function' && callback(err, res);
@@ -24,33 +24,25 @@ describe("API - USER MANAGEMENT (authenticated)", () => {
   var id = null;
   var token = null;
 
+// Even though it's not tested until later, we should create and delete users with every test.
+// There shouldn't be any carryover, and tests should be able to run independently (even though
+// functions might be needed).  
+
   before((done) => {
-    createTestUser(config.email, config.username, config.password, (err, res) => {
-      logInTestUser(config.email, config.password, (err, res) => {
-        expect(res.body.user._id).to.exist;
-        expect(res.body.token).to.exist;
-        id = res.body.user._id;
-        token = res.body.token;
-        done();
-      });
+    logInTestUser(config.users.email, config.users.password, (err, res) => {
+      expect(res.body.user._id).to.exist;
+      expect(res.body.token).to.exist;
+      id = res.body.user._id;
+      token = res.body.token;
+      done();
     });
   });
 
   it.skip("should let a user change their username");
-  it.skip("should let a user change their password")
-  it("should not let a user delete another user", (done) => {
-    createTestUser(config.email2, config.username2, config.password2, (err1, res1) => {
-      deleteTestUser(id, res1.body.token, (err2, res2) => {
-        expect(res2.status).to.be.equal(403);
-      });
-      deleteTestUser(res1.body.user._id, res1.body.token, (err3, res3) => {
-        done();
-      });
-    })
-  });
+  it.skip("should let a user change their password");
   // Note, this should always be the last test in this describe
   it("should let a user delete itself", (done) => {
-    deleteTestUser(id, token, (err, res) => {
+    deleteTestUser(token, (err, res) => {
       expect(res.status).to.be.equal(200);
       done();
     });

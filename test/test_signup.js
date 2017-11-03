@@ -18,40 +18,40 @@ const createTestUser = (email, username, password, callback) => {
 }
 
 describe("AUTH - SIGNUP (not authenticated)", () => {
-  it("should allow a user to sign up", (done) => {
-    exports.createTestUser(config.email, config.username, config.password, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      done();
-    });
-  });
   it("should return an error if any of the fields are empty", (done) => {
     // No email
-    exports.createTestUser(null, config.username, config.password, (err, res) => {
+    exports.createTestUser(null, config.signup.username, config.signup.password, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     // No username
-    exports.createTestUser(config.email, null, config.password, (err, res) => {
+    exports.createTestUser(config.signup.email, null, config.signup.password, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     // No password
-    exports.createTestUser(config.email, config.username, null, (err, res) => {
+    exports.createTestUser(config.signup.email, config.signup.username, null, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     done();
   });
   it("should return an error if email is not proper format", (done) => {
     // No email
-    exports.createTestUser(config.bademail, config.username, config.password, (err, res) => {
+    exports.createTestUser(config.bademail, config.signup.username, config.signup.password, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     done();
   });
   it("should return an error if password less than 8 characters", (done) => {
     // No email
-    exports.createTestUser(config.email, config.username, config.badpassword, (err, res) => {
+    exports.createTestUser(config.signup.email, config.signup.username, config.shortPassword, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     done();
+  });
+  it("should allow a user to sign up", (done) => {
+    exports.createTestUser(config.signup.email, config.signup.username, config.signup.password, (err, res) => {
+      expect(res.status).to.be.equal(201);
+      done();
+    });
   });
 });
 

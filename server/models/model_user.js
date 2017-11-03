@@ -1,4 +1,5 @@
-const mongoose      = require('mongoose');
+const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt        = require('bcrypt');
 const bcryptConfig  = require('../config/config_bcrypt');
 const numSaltRounds = 8;
@@ -6,16 +7,55 @@ const numSaltRounds = 8;
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
-    index: { unique: true }
+    unique: true
   },
   email: {
     type: String,
-    index: { unique: true }
+    unique: true
   },
   local: {
     password: String
   }
 });
+
+UserSchema.plugin(uniqueValidator);
+
+const getUserByID = function (id, callback) {
+  this
+    .findById(id)
+    .exec(callback);
+}
+
+const createUser = function (email, username, password, callback) {
+  const newUser = new this({
+    email: email,
+    username: username,
+    local: {
+      password: hashPassword(password)
+    }
+  });
+
+  newUser.save(callback);
+}
+
+const deleteUser = function (id, callback) {
+  this
+    .findById(id)
+    .exec((error, user) => {
+      // Return 500 for error querying channel
+      if (error || !user) {
+        callback(new Error("Error querying for user"));
+      }
+      // Try to delete channel  
+      else {
+        user.remove(callback);
+      }
+  });
+}
+
+UserSchema.statics.create = createUser;
+UserSchema.statics.getByID = getUserByID;
+UserSchema.statics.delete = deleteUser;
 
 // Model method to check if password is correct
 UserSchema.methods.comparePassword = function comparePassword(password, callback) {
@@ -23,7 +63,7 @@ UserSchema.methods.comparePassword = function comparePassword(password, callback
 };
 
 // Model method to hash the password
-UserSchema.methods.hashPassword = function hashPassword(password) {
+function hashPassword(password) {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(bcryptConfig.numSaltRounds));
 }
 

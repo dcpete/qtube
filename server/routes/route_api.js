@@ -1,157 +1,124 @@
 const express     = require('express');
 const Channel     = require('../models/model_channel');
-const User        = require('../models/model_user');
-const validator   = require('validator');
+const User = require('../models/model_user');
+const Joi = require('joi');
+const validator = require('express-joi-validation')({});
 const _           = require('lodash');
 
 const router      = new express.Router();
 
 /*
-========================================
-Channels
-========================================
-*/
-const validateChannel = (payload) => {
-  const errors = {};
-  let isFormValid = true;
-  let message = '';
-
-  if (!payload || !payload.name) {
-    isFormValid = false;
-    errors.name = 'Please provide a name for this channel';
-  }
-  else {
-    if (typeof payload.name !== 'string') {
-      isFormValid = false;
-      errors.name = 'Channel name must be a string';
-    }
-  }
-
-  if (!isFormValid) {
-    message = 'Error creating channel';
-  }
-
-  return {
-    success: isFormValid,
-    message,
-    errors
-  };
-};
-
-const getChannelStub = () => {}
-
-// Get list of all channels
-router.get('/channels', (req, res, next) => {
-  Channel
-    .find({})
-    .populate('owner', 'username')
-    .exec((error, channels) => {
-      if (error) {
-        return res.status(500).json({
-          message: 'Could not retrieve channels'
-        });
-      }
-      res.json(channels);
-    });
+ * ========================================
+ * Joi validation objects
+ * ========================================
+ */
+const joiUser = Joi.object({
+  username: Joi.string().max(16),
+  _id: Joi.string().hex().length(24).required()
 });
 
-// Create a channel
-router.post('/channels', (req, res, next) => {
-  const validationResult = validateChannel(req.body);
-  if (!validationResult.success) {
-    return res.status(400).json({
-      success: false,
-      message: validationResult.message,
-      errors: validationResult.errors
-    });
-  }
+const joiVideo = Joi.object({
+  id: Joi.string().length(11).required()
+})
 
-  const newChannel = new Channel();
-  newChannel.name = req.body.name;
-  newChannel.owner = req.user;
-  newChannel.save((error, channel) => {
+const joiPlaylist = Joi.array().items(joiVideo);
+
+const joiChannel = Joi.object({
+  name: Joi.string().min(1).max(50),
+  _id: Joi.string().length(24).hex(),
+  created: Joi.date(),
+  owner: joiUser,
+  playlist: joiPlaylist,
+  currentVideo: joiVideo,
+  currentVideoStarted: Joi.date(),
+  playing: Joi.boolean()
+});
+
+const joiID = Joi.object().keys({
+  _id: Joi.string().length(24).hex()
+});
+
+/*
+ * ========================================
+ * Channels
+ * ========================================
+ */
+
+// Create a channel
+router.post('/channels', validator.body(joiChannel), (req, res, next) => {
+  Channel.create(req.body.name, req.user, (error, channel) => {
     if (error) {
-      return res.status(500).json({
-        success: false,
-        message: "Could not create channel"
+      res.status(500).json({
+        message: 'Could not create channel'
       });
     }
-    // Successful channel creation
-    return res.status(201).json({
-      success: true,
-      message: 'Channel was successfully created',
-      channel: _.omit(channel.toJSON(), 'owner.local')
-    });
+    else {
+      const loc = `/api/channels/${channel._id}`;
+      res.location(loc).status(201).json(channel);
+    }
   });
 });
 
-// Get a specific channel
-router.get('/channels/:channelid', (req, res, next) => {
-  const channelid = req.params.channelid;
-  Channel
-    .findById(channelid)
-    .populate('owner', 'username')
-    .populate('playlist')
-    .populate('currentVideo')
-    .exec((error, channel) => {
-      if (error) {
-        console.log("Error: " + error);
-        return res.status(500).json({
-          message: 'Could not retrieve channel'
-        });
-      }
-      if (!channel) {
-        return res.status(404).json({
-          message: 'Could not find channel'
-        })
-      }
+// Get a specific channel by _id
+router.get('/channels/:_id', validator.params(joiID), (req, res, next) => {
+  Channel.getChannel(req.params.channelid, (error, channel) => {
+    if (error) {
+      res.status(500).json({
+        message: 'Could not retrieve channel'
+      });
+    }
+    else if (!channel) {
+      res.status(404).end;
+    }
+    else {
       res.json(channel);
-    });
+    }  
+  });
 });
 
+// Get a list of channels by search term
+router.get('/channels', validator.query(joiChannel), (req, res, next) => {
+  Channel.search(req.query, (error, channels) => {
+    if (error) {
+      res.status(500).json({
+        message: 'Could not search for channels'
+      });
+    }
+    else {
+      res.json(channels);
+    }
+  });
+});
+
+// Edit a specific channel
+/*
+router.post('/channels/:_id', validator.params(joiID), validator.body(joiChannel), (req, res, next) => {
+  if (req.params._id !== req.body._id) {
+    res.status(400).send('Parameter and body id do not match');
+  }
+  else {
+    Channel
+      .findById(req.params._id)
+    
+  }
+});
+*/
+
 // Delete a specific channel
-router.delete('/channels/:channelid', (req, res, next) => {
-  const channelid = req.params.channelid;
-  
-  Channel
-    .findById(channelid)
-    .populate('owner')
-    .exec((error, channel) => {
-      // Return 500 for error querying channel
-      if (error) {
-        console.log("Error: " + error);
-        return res.status(500).json({
-          message: 'Could not retrieve channel'
-        });
-      }
-      // Return 404 for channel not found
-      else if (!channel) {
-        return res.status(404).json({
-          message: 'Channel not found'
-        })
-      }
-      // Return 403 if user does not own channel  
-      else if (channel.owner._id.toString() !== req.user._id.toString()) {
-        return res.status(403).json({
-          message: 'User does not own channel'
-        });
-      }
-      // Try to delete channel  
-      else {
-        channel
-          .remove((error, channel) => {
-            // Return 500 if error deleting channel
-            if (error) {
-              console.log("Error: " + error);
-              return res.status(500).json({
-                message: 'Could not delete channel'
-              });
-            }
-            // Return 200 and channel for successful delete
-            res.json(channel);
-          });
-      }
-    });
+router.delete('/channels/:_id', validator.params(joiID), (req, res, next) => {
+  Channel.delete(req.params._id, (error, channel) => {
+    if (error) {
+      res.status(500).json({
+        message: 'Could not delete channel'
+      });
+    }
+    else if (!channel) {
+      res.status(404).end;
+    }
+    else {
+      res.json(channel);
+    }
+  });
 });
 
 /*
@@ -175,7 +142,6 @@ router.get('/users/:userid', (req, res, next) => {
     .findById(userid)
     .exec((error, user) => {
       if (error) {
-        console.log("Error: " + error);
         return res.status(500).json({
           message: 'Could not retrieve user'
         });
@@ -200,8 +166,26 @@ router.get('/users/:userid', (req, res, next) => {
 /**
  * Delete a user
  */
-router.delete('/users/:userid', (req, res, next) => {
-  const userid = req.params.userid;
+
+router.delete('/users', (req, res, next) => {
+  User.delete(req.user._id, (error, user) => {
+    if (error) {
+      res.status(500).json({
+        message: 'Could not delete user'
+      });
+    }
+    else if (!user) {
+      res.status(404).end;
+    }
+    else {
+      res.json(user);
+    }
+  });
+});
+/*
+router.delete('/users', (req, res, next) => {
+  console.log(req.user);
+  const userid = req.user._id;
 
   User
     .findById(userid)
@@ -242,6 +226,6 @@ router.delete('/users/:userid', (req, res, next) => {
       }
     });
 });
-
+*/
 
 module.exports = router;

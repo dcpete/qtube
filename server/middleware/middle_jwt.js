@@ -11,15 +11,17 @@ const getToken = (user, next) => {
   };
 
   // create a token string
-  const token = jwt.sign(payload, jwtconfig.secret);
-
-  return next(token);
+  jwt.sign(payload, jwtconfig.secret, (err, token) => {
+    return next(err, token);
+  });
+  
 }
 
 /**
  *  Check the authentication token for a valid user
  */
 const checkToken = (req, res, next) => {
+  // Get shouldn't ever require authentication
   if (req.method == "GET") {
     return next();
   }
@@ -39,7 +41,7 @@ const checkToken = (req, res, next) => {
     const userId = decoded.sub;
 
     // check if a user exists
-    return User.findById(userId, (error, user) => {
+    return User.getByID(userId, (error, user) => {
       if (error || !user) {
         return res.status(401).end();
       }

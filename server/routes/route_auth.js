@@ -1,156 +1,78 @@
 const express     = require('express');
-const validator   = require('validator');
 const passport    = require('passport');
 const _           = require('lodash');
+const joi         = require('joi');
+const validator = require('express-joi-validation')({});
 
 const router = new express.Router();
 
-/**
- * Validate the sign up form
- *
- * @param {object} payload - the HTTP body message
- * @returns {object} The result of validation. Object contains a boolean validation result,
- *                   errors tips, and a global message for the whole form.
- */
-const validateSignupForm = (payload) => {
-  const errors = {};
-  let isFormValid = true;
-  let message = '';
+const joiUserSignup = joi.object({
+  username: joi.string().min(1).max(16).required(),
+  email: joi.string().email().required(),
+  password: joi.string().min(8).required()
+});
 
-  if (!payload || typeof payload.email !== 'string' || !validator.isEmail(payload.email)) {
-    isFormValid = false;
-    errors.email = 'Please provide a correct email address.';
-  }
+const joiUserLogin = joi.object({
+  email: joi.string().email().required(),
+  password: joi.string().min(8).required()
+});
 
-  if (!payload || typeof payload.password !== 'string' || payload.password.trim().length < 8) {
-    isFormValid = false;
-    errors.password = 'Password must have at least 8 characters.';
-  }
-
-  if (!payload || typeof payload.username !== 'string' || payload.username.trim().length === 0) {
-    isFormValid = false;
-    errors.name = 'Please enter a username.';
-  }
-
-  if (!isFormValid) {
-    message = 'Check the form for errors.';
-  }
-
-  return {
-    success: isFormValid,
-    message,
-    errors
-  };
-}
-
-/**
- * Validate the login form
- *
- * @param {object} payload - the HTTP body message
- * @returns {object} The result of validation. Object contains a boolean validation result,
- *                   errors tips, and a global message for the whole form.
- */
-const validateLoginForm = (payload) => {
-  const errors = {};
-  let isFormValid = true;
-  let message = '';
-
-  if (!payload || typeof payload.email !== 'string' || payload.email.trim().length === 0) {
-    isFormValid = false;
-    errors.email = 'Please provide your email address.';
-  }
-
-  if (!payload || typeof payload.password !== 'string' || payload.password.trim().length === 0) {
-    isFormValid = false;
-    errors.password = 'Please provide your password.';
-  }
-
-  if (!isFormValid) {
-    message = 'Check the form for errors.';
-  }
-
-  return {
-    success: isFormValid,
-    message,
-    errors
-  };
+const formatMongooseError = (error) => {
+  newError = { }
+  _.forEach(error.errors, (value, key) => {
+    newError[key] = _.pick(value, ['message', 'name'])
+  })
+  return newError;
 }
 
 /**
  * Sign up (create) a user
  */
-router.post('/signup', (req, res, next) => {
-  const validationResult = validateSignupForm(req.body);
-  if (!validationResult.success) {
-    return res.status(400).json({
-      success: false,
-      message: validationResult.message,
-      errors: validationResult.errors
-    });
-  }
-
-  return passport.authenticate('local-signup', (err, user, token) => {
-    if (err) {
-      // Handle duplicate user error
-      if (err.name === 'DuplicateUserError') {
-        return res.status(409).json({
-          success: false,
-          message: 'Check the form for errors.',
-          errors: err.details
-        });
+router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
+  passport.authenticate('local-signup', (error, user, token) => {
+    if (error) {
+      switch (error.name) {
+        case 'ValidationError':
+          res.status(401).json(formatMongooseError(error));
+          break;
+        default:
+          res.status(500).json({
+            message: 'Could not create user'
+          });  
       }
-
-      // Handle other uncaught errors
-      return res.status(400).json({
-        success: false,
-        message: 'Could not process the form.'
+    }
+    else {
+      const loc = `/api/users/${user._id}`;
+      res.location(loc).status(201).json({
+        user: user,
+        token: token
       });
     }
-
-    // Successful user creation
-    return res.status(200).json({
-      success: true,
-      message: 'You have successfully signed up!',
-      user: _.omit(user.toJSON(), 'local'),
-      token
-    });
   })(req, res, next);
 });
 
 /**
  * Authenticate a user
  */
-router.post('/login', (req, res, next) => {
-  const validationResult = validateLoginForm(req.body);
-  if (!validationResult.success) {
-    return res.status(400).json({
-      success: false,
-      message: validationResult.message,
-      errors: validationResult.errors
-    });
-  }
-
-  return passport.authenticate('local-login', (err, user, token) => {
-    if (err) {
-      if (err.name === 'IncorrectCredentialsError') {
-        return res.status(401).json({
-          success: false,
-          message: err.message
+router.post('/login', validator.body(joiUserLogin), (req, res, next) => {
+  passport.authenticate('local-login', (error, user, token) => {
+    if (error) {
+      if (error.name === 'CredentialsError') {
+        res.status(401).json(error);
+      }
+      else {
+        console.log(error.toString());
+        res.status(500).json({
+          message: 'Could not log in user'
         });
       }
-
-      return res.status(400).json({
-        success: false,
-        message: 'Could not process the form.'
+    }
+    else {
+      res.json({
+        token,
+        user: _.omit(user.toJSON(), 'local')
       });
     }
-
-    return res.json({
-      success: true,
-      message: 'You have successfully logged in!',
-      token,
-      user: _.omit(user.toJSON(), 'local')
-    });
   })(req, res, next);
 });
 

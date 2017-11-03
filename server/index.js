@@ -39,7 +39,7 @@ const accessLogStream = rfs('access.log', {
   maxFiles: logConfig.maxFiles
 })
 // initialize logger
-express.use(morgan('combined', {stream: accessLogStream}))
+express.use(morgan('combined', { stream: accessLogStream }));
 
 // passport config
 express.use(passport.initialize());

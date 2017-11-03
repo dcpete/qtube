@@ -1,4 +1,3 @@
-// models/index.js
 const mongoose = require('mongoose');
 
 module.exports.connect = (uri) => {
