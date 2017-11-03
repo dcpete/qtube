@@ -4,8 +4,10 @@
   "description": "Room based youtube player",
   "main": "index.js",
   "scripts": {
-    "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack",
+    "dev": "webpack-dev-server",
+    "start": "node server",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -25,7 +27,20 @@
   "dependencies": {
     "axios": "^0.16.2",
     "babel-preset-stage-1": "^6.24.1",
+    "bcrypt": "^1.0.2",
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "express-joi-validation": "^0.2.1",
+    "express-validation": "^1.0.2",
+    "fs": "0.0.1-security",
+    "joi": "^10.6.0",
+    "jsonwebtoken": "^7.4.1",
     "lodash": "^4.17.4",
+    "mongoose": "^4.11.3",
+    "mongoose-unique-validator": "^1.0.6",
+    "morgan": "^1.8.2",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-redux": "^5.0.5",
@@ -33,7 +48,9 @@
     "react-router-dom": "^4.1.1",
     "redux": "^3.7.2",
     "redux-form": "^7.0.0",
-    "redux-promise": "^0.5.3"
+    "redux-thunk": "^2.2.0",
+    "rotating-file-stream": "^1.2.2",
+    "validator": "^8.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -42,9 +59,10 @@
     "babel-preset-react": "^6.24.1",
     "chai": "^4.1.0",
     "jsdom": "^11.1.0",
-    "mocha": "^3.4.2",
+    "mocha": "^3.5.0",
     "react-addons-test-utils": "^15.6.0",
     "redux-devtools-extension": "^2.13.2",
+    "supertest": "^3.0.0",
     "webpack": "^3.3.0",
     "webpack-dev-server": "^2.5.1"
   }
