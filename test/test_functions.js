@@ -76,3 +76,14 @@ this.deleteChannel = (token, url, callback) => {
       return typeof callback === 'function' && callback(err, res);
     });
 }
+
+this.editChannel = (token, url, body, callback) => {
+  return server
+    .patch(url)
+    .set("Authorization", "Bearer " + token)
+    .send(body)
+    .type('form')
+    .end((err, res) => {
+      return typeof callback === 'function' && callback(err, res);
+    })
+}

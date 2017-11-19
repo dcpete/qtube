@@ -12,7 +12,7 @@ const router      = new express.Router();
  * Joi validation objects
  * ========================================
  */
-const joiChannelUser = Joi.object({
+const joiUser = Joi.object({
   username: Joi.string().max(16),
   password: Joi.string().min(8),
   _id: Joi.string().hex().length(24).required()
@@ -33,12 +33,17 @@ const joiChannel = Joi.object({
   name: Joi.string().min(1).max(50),
   _id: Joi.string().length(24).hex(),
   created: Joi.date(),
-  owner: joiChannelUser,
+  owner: joiUser,
   playlist: joiPlaylist,
   currentVideo: joiVideo,
   currentVideoStarted: Joi.date(),
   playing: Joi.boolean()
 });
+
+const joiChannelEdit = Joi.object({
+  name: Joi.string().min(1).max(50),
+  owner: joiUser
+})
 
 const joiID = Joi.object().keys({
   _id: Joi.string().length(24).hex()
@@ -67,7 +72,7 @@ router.post('/channels', validator.body(joiChannel), (req, res, next) => {
 
 // Get a specific channel by _id
 router.get('/channels/:_id', validator.params(joiID), (req, res, next) => {
-  Channel.getChannel(req.params.channelid, (error, channel) => {
+  Channel.getByID(req.params.channelid, (error, channel) => {
     if (error) {
       res.status(500).json({
         message: 'Could not retrieve channel'
@@ -84,31 +89,55 @@ router.get('/channels/:_id', validator.params(joiID), (req, res, next) => {
 
 // Get a list of channels by search term
 router.get('/channels', validator.query(joiChannel), (req, res, next) => {
-  Channel.search(req.query, (error, channels) => {
-    if (error) {
-      res.status(500).json({
-        message: 'Could not search for channels'
-      });
-    }
-    else {
-      res.json(channels);
-    }
-  });
+  if (!req.query || _.isEmpty(req.query)) {
+    res.status(400).json({
+      message: 'Request must supply a query'
+    });
+  }
+  else {
+    Channel.search(req.query, (error, channels) => {
+      if (error) {
+        res.status(500).json({
+          message: 'Could not search for channels'
+        });
+      }
+      else {
+        res.json(channels);
+      }
+    });
+  }
 });
 
 // Edit a specific channel
-/*
-router.post('/channels/:_id', validator.params(joiID), validator.body(joiChannel), (req, res, next) => {
-  if (req.params._id !== req.body._id) {
-    res.status(400).send('Parameter and body id do not match');
+router.patch('/channels/:_id', validator.params(joiID), validator.body(joiChannelEdit), (req, res, next) => {
+  if (!req.body || _.isEmpty(req.body)) {
+    res.status(400).json({
+      message: 'Request sent with nothing to update'
+    });
   }
   else {
-    Channel
-      .findById(req.params._id)
-    
+    Channel.edit(req.params._id, req.user, req.body, (error, channel) => {
+      if (error) {
+        switch (error.name) {
+          case "UnauthorizedError":
+            res.status(403).send(error);
+            break;
+          case "NotFoundError":
+            res.status(404).end();
+            break;
+          case "DatabaseError":
+            res.status(500).send(error);
+            break;
+          default:
+            res.status(500).end();
+        }
+      }
+      else {
+        res.json(channel);
+      }
+    })
   }
 });
-*/
 
 // Delete a specific channel
 router.delete('/channels/:_id', validator.params(joiID), (req, res, next) => {

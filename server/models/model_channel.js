@@ -51,10 +51,10 @@ const createChannel = function (name, owner, callback) {
  * @param {string} id 
  * @param {function} callback
  */
-const getChannel = function (id, callback) {
+const getChannelByID = function (id, callback) {
   this
     .findById(id)
-    .populate('owner', ['username', 'id'])
+    .populate('owner')
     .populate('playlist')
     .populate('currentVideo')
     .exec(callback);
@@ -81,7 +81,7 @@ const deleteChannel = function (id, callback) {
   });
 }
 
-const searchChannel = function (params, callback) {
+const searchChannel = function(params, callback) {
   this
     .find(params)
     .exec((error, channels) => {
@@ -94,9 +94,45 @@ const searchChannel = function (params, callback) {
     })
 }
 
+const editChannel = function (channelID, user, body, callback) {
+  this
+    .findById(channelID)
+    .populate('owner')
+    .exec((error, channel) => {
+      if (error) {
+        error = new Error("Error querying for channel");
+        error.name = "DatabaseError";
+        callback(error);
+      }
+      else if (!channel) {
+        error = new Error("Channel not found");
+        error.name = "NotFoundError";
+        callback(error);
+      }
+      else if (!channel.owner._id.equals(user._id)) {
+        console.log('channel owner: ' + channel.owner._id);
+        console.log('user ' + user._id);
+        error = new Error("User does not own channel");
+        error.name = "UnauthorizedError";
+        callback(error);
+      }
+      else {
+        channel.set(body);
+        channel.save((error, updatedChannel) => {
+          if (error) {
+            error = new Error("Error updating channel");
+            error.name = "DatabaseError";
+          }
+          callback(error, updatedChannel);
+        })
+      }
+    });
+}
+
 ChannelSchema.statics.create = createChannel;
-ChannelSchema.statics.get = getChannel;
+ChannelSchema.statics.getByID = getChannelByID;
 ChannelSchema.statics.delete = deleteChannel;
 ChannelSchema.statics.search = searchChannel;
+ChannelSchema.statics.edit = editChannel;
 
 module.exports = mongoose.model('Channel', ChannelSchema);

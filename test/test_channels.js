@@ -6,9 +6,9 @@ const server          = require("supertest").agent(config.uri);
 const fn = require('./test_functions');
 
 describe("API - CHANNELS (authenticated)", () => {
-  var id = null;
-  var token = null;
-  var url = null;
+  let id = null;
+  let token = null;
+  let url = null;
 
   before((done) => {
     fn.createTestUser(config.creds.channels.email, config.creds.channels.username, config.creds.channels.password, (err, res) => {
@@ -22,22 +22,34 @@ describe("API - CHANNELS (authenticated)", () => {
   });
 
   it("should be able to create a channel if authenticated", (done) => {
+    expect(token).to.exist;
     fn.createChannel(token, "test channel", (err, res) => {
       expect(res.status).to.be.equal(201);
       url = res.headers.location;
       done();
     });
   });
+  
+  it("should be able to change the channel name", (done) => {
+    const updatedName = 'changed name';
+    expect(url).to.exist;
+    expect(token).to.exist;
+    fn.editChannel(token, url, { name: updatedName }, (err, res) => {
+      expect(res.status).to.be.equal(200);
+      expect(res.body.name).to.be.equal(updatedName);
+      done();
+    })
+  });
 
   it("should be able to delete a channel if authenticated", (done) => {
     expect(url).to.exist;
+    expect(token).to.exist;
     fn.deleteChannel(token, url, (err, res) => {
       expect(res.status).to.be.equal(200);
       done();
     });
   });
 
-  it.skip("should be able to change the title");
   it.skip("should be able to add videos to the channel");
   it.skip("should be able to change the currently playing video");
   it.skip("should not be able to alter another user's channel");
@@ -96,14 +108,11 @@ describe("API - CHANNELS (not authenticated)", () => {
     });
   });
 
-  it.skip("should list all channels from /api/channels", (done) => {
+  it("should return 400 if search with no query", (done) => {
     server
       .get("/api/channels")
-      .expect("Content-type", /json/)
-      .expect(200)
       .end((err, res) => {
-        // HTTP status should be 200
-        expect(res.status).to.equal(200);
+        expect(res.status).to.equal(400);
         done();
       });
   });
