@@ -4,6 +4,5 @@ bundle.js
 npm-debug.log
 .DS_Store
 
-# IntelliJ
-*.iml
-/.idea
+# Ignore google configuration file
+/server/config/config_google.js
