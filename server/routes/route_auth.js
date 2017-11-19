@@ -1,10 +1,10 @@
 const express     = require('express');
-const passport    = require('passport');
 const _           = require('lodash');
 const joi         = require('joi');
-const validator = require('express-joi-validation')({});
+const validator   = require('express-joi-validation')({});
+const auth        = require('../util/util_auth');
 
-const router = new express.Router();
+const router      = new express.Router();
 
 const joiUserSignup = joi.object({
   username: joi.string().min(1).max(16).required(),
@@ -29,11 +29,14 @@ const formatMongooseError = (error) => {
  * Sign up (create) a user
  */
 router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
-  passport.authenticate('local-signup', (error, user, token) => {
+  const email = req.body.email;
+  const username = req.body.username;
+  const password = req.body.password;
+  auth.signUp(email, username, password, (error, user, token) => {
     if (error) {
       switch (error.name) {
         case 'ValidationError':
-          res.status(401).json(formatMongooseError(error));
+          res.status(400).json(formatMongooseError(error));
           break;
         default:
           res.status(500).json({
@@ -48,20 +51,27 @@ router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
         token: token
       });
     }
-  })(req, res, next);
+  });
 });
 
 /**
  * Authenticate a user
  */
 router.post('/login', validator.body(joiUserLogin), (req, res, next) => {
-  passport.authenticate('local-login', (error, user, token) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  auth.logIn(email, password, (error, user, token) => {
     if (error) {
-      if (error.name === 'CredentialsError') {
+      if (error.name === 'ValidationError') {
+        res.status(400).json(formatMongooseError(error));
+      }
+      else if (error.name === 'CredentialsError') {
         res.status(401).json(error);
       }
+      else if (error.name === 'DatabaseError') {
+        res.status(500).json(error);
+      }
       else {
-        console.log(error.toString());
         res.status(500).json({
           message: 'Could not log in user'
         });
@@ -73,7 +83,7 @@ router.post('/login', validator.body(joiUserLogin), (req, res, next) => {
         user: _.omit(user.toJSON(), 'local')
       });
     }
-  })(req, res, next);
+  });
 });
 
 module.exports = router;

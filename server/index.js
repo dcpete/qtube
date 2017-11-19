@@ -6,7 +6,6 @@
 const express     = require('express')();
 const bodyParser  = require('body-parser');
 const morgan      = require('morgan');
-const passport    = require('passport');
 const path        = require('path');
 const fs          = require('fs');
 const rfs         = require('rotating-file-stream');
@@ -15,8 +14,6 @@ const rfs         = require('rotating-file-stream');
 const models      = require('./models');
 const dbconfig    = require('./config/config_database');
 const logConfig   = require('./config/config_log');
-const localSignup = require('./config/passport/config_local_signup');
-const localLogin  = require('./config/passport/config_local_login');
 const checkToken  = require('./middleware/middle_jwt').checkToken;
 const authRoutes  = require('./routes/route_auth');
 const apiRoutes   = require('./routes/route_api');
@@ -40,11 +37,6 @@ const accessLogStream = rfs('access.log', {
 })
 // initialize logger
 express.use(morgan('combined', { stream: accessLogStream }));
-
-// passport config
-express.use(passport.initialize());
-passport.use('local-signup', localSignup);
-passport.use('local-login', localLogin);
 
 // authenticaion middleware
 express.use('/api', checkToken);

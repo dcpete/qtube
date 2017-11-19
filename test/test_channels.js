@@ -3,29 +3,7 @@ const config          = require('./test_config');
 const expect          = require("chai").expect;
 const server          = require("supertest").agent(config.uri);
 
-const createTestUser  = require('./test_signup').createTestUser;
-const logInTestUser   = require('./test_login').logInTestUser;
-const deleteTestUser  = require('./test_users').deleteTestUser;
-
-const createChannel = (token, title, callback) => {
-  return server
-    .post("/api/channels")
-    .set("Authorization", "Bearer " + token)
-    .send({ "name": title })
-    .type('form')
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
-}
-
-const deleteChannel = (token, url, callback) => {
-  return server
-    .delete(url)
-    .set("Authorization", "Bearer " + token)
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
-}
+const fn = require('./test_functions');
 
 describe("API - CHANNELS (authenticated)", () => {
   var id = null;
@@ -33,7 +11,7 @@ describe("API - CHANNELS (authenticated)", () => {
   var url = null;
 
   before((done) => {
-    createTestUser(config.channels.email, config.channels.username, config.channels.password, (err, res) => {
+    fn.createTestUser(config.creds.channels.email, config.creds.channels.username, config.creds.channels.password, (err, res) => {
       expect(err).to.not.exist;
       expect(res.body.token).to.exist;
       expect(res.body.user._id).to.exist;
@@ -44,7 +22,7 @@ describe("API - CHANNELS (authenticated)", () => {
   });
 
   it("should be able to create a channel if authenticated", (done) => {
-    createChannel(token, "test channel", (err, res) => {
+    fn.createChannel(token, "test channel", (err, res) => {
       expect(res.status).to.be.equal(201);
       url = res.headers.location;
       done();
@@ -53,7 +31,7 @@ describe("API - CHANNELS (authenticated)", () => {
 
   it("should be able to delete a channel if authenticated", (done) => {
     expect(url).to.exist;
-    deleteChannel(token, url, (err, res) => {
+    fn.deleteChannel(token, url, (err, res) => {
       expect(res.status).to.be.equal(200);
       done();
     });
@@ -66,7 +44,7 @@ describe("API - CHANNELS (authenticated)", () => {
   it.skip("should not be able to delete another user's channel");
 
   after((done) => {
-    deleteTestUser(token, (err, res) => {
+    fn.deleteTestUser(token, (err, res) => {
       if (err) {
       }
       expect(res.status).to.be.equal(200);
@@ -81,34 +59,33 @@ describe("API - CHANNELS (authenticated)", () => {
 
 
 describe("API - CHANNELS (not authenticated)", () => {
-  var testUser = null;
-  var testUserToken = null;
+  var token = null;
   var testChannel1 = null;
   var testChannel2 = null;
   var testChannel3 = null;
 
   before((done) => {
-    createTestUser(config.channels.email, config.channels.username, config.channels.password, (err, res) => {
+    fn.createTestUser(config.creds.channels.email, config.creds.channels.username, config.creds.channels.password, (err, res) => {
       expect(err).to.not.exist;
       expect(res.body.token).to.exist;
       expect(res.body.user).to.exist;
       testUserToken = res.body.token;
       testUser = res.body.user;
-      createChannel(testUserToken, "test channel 1", (err, res) => {
+      fn.createChannel(testUserToken, "test channel 1", (err, res) => {
         expect(res.status).to.be.equal(201);
         expect(res.headers.location).to.exist;
         expect(res.body).to.exist;
         testChannel1 = res.body;
         testChannel1.url = res.headers.location;
       });
-      createChannel(testUserToken, "test channel 2", (err, res) => {
+      fn.createChannel(testUserToken, "test channel 2", (err, res) => {
         expect(res.status).to.be.equal(201);
         expect(res.headers.location).to.exist;
         expect(res.body).to.exist;
         testChannel2 = res.body;
         testChannel2.url = res.headers.location;
       });
-      createChannel(testUserToken, "test channel 3", (err, res) => {
+      fn.createChannel(testUserToken, "test channel 3", (err, res) => {
         expect(res.status).to.be.equal(201);
         expect(res.headers.location).to.exist;
         expect(res.body).to.exist;
@@ -143,9 +120,8 @@ describe("API - CHANNELS (not authenticated)", () => {
       });
   });
   it.skip("should find multiple channels from a query");
-  it.skip("should find all channels from an empty query")
 
-  it("should return 401 for any unauthenticated POST request", (done) => {
+  it.skip("should return 401 for any unauthenticated POST request", (done) => {
     server
       .post("/api/channels")
       .expect("Content-type", /json/)
@@ -156,7 +132,7 @@ describe("API - CHANNELS (not authenticated)", () => {
       });
   });
   
-  it("should return 401 for any unauthenticated DELETE request", (done) => {
+  it.skip("should return 401 for any unauthenticated DELETE request", (done) => {
     server
       .delete("/api/channels")
       .expect("Content-type", /json/)
@@ -168,13 +144,11 @@ describe("API - CHANNELS (not authenticated)", () => {
   });
 
   after((done) => {
-    deleteTestUser(testUserToken);
-    deleteChannel(testUserToken, testChannel1);
-    deleteChannel(testUserToken, testChannel2);
-    deleteChannel(testUserToken, testChannel3);
-    done();
+    fn.deleteChannel(testUserToken, testChannel1.url);
+    fn.deleteChannel(testUserToken, testChannel2.url);
+    fn.deleteChannel(testUserToken, testChannel3.url);
+    fn.deleteTestUser(testUserToken, (err, res) => {
+      done();
+    });
   })
 });
-
-exports.createChannel = createChannel;
-exports.deleteChannel = deleteChannel;

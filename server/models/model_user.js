@@ -20,12 +20,6 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.plugin(uniqueValidator);
 
-const getUserByID = function (id, callback) {
-  this
-    .findById(id)
-    .exec(callback);
-}
-
 const createUser = function (email, username, password, callback) {
   const newUser = new this({
     email: email,
@@ -53,8 +47,21 @@ const deleteUser = function (id, callback) {
   });
 }
 
+const getUserByID = function (id, callback) {
+  this
+    .findById(id)
+    .exec(callback);
+}
+
+const getUserByEmail = function (email, callback) {
+  this
+    .findOne({ 'email': email })
+    .exec(callback)
+}
+
 UserSchema.statics.create = createUser;
 UserSchema.statics.getByID = getUserByID;
+UserSchema.statics.getUserByEmail = getUserByEmail;
 UserSchema.statics.delete = deleteUser;
 
 // Model method to check if password is correct

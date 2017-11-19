@@ -138,21 +138,19 @@ Users
  */
 router.get('/users/:userid', (req, res, next) => {
   const userid = req.params.userid;
-  User
-    .findById(userid)
-    .exec((error, user) => {
-      if (error) {
-        return res.status(500).json({
-          message: 'Could not retrieve user'
-        });
-      }
-      if (!user) {
-        return res.status(404).json({
-          message: 'Could not find user'
-        })
-      }
-      res.json(_.omit(user.toJSON(), ['local', 'email', '__v']));
-    });
+  User.getByID(userid, (error, user) => {
+    if (error) {
+      return res.status(500).json({
+        message: 'Could not retrieve user'
+      });
+    }
+    if (!user) {
+      return res.status(404).json({
+        message: 'Could not find user'
+      })
+    }
+    res.json(_.omit(user.toJSON(), ['local', 'email', '__v']));
+  });
 });
 
 /**

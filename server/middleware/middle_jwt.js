@@ -3,21 +3,6 @@ const User        = require('../models/model_user');
 const jwtconfig   = require('../config/config_jwt');
 
 /**
- * Generate an authentication token for a valid user
- */
-const getToken = (user, next) => {
-  const payload = {
-    sub: user._id
-  };
-
-  // create a token string
-  jwt.sign(payload, jwtconfig.secret, (err, token) => {
-    return next(err, token);
-  });
-  
-}
-
-/**
  *  Check the authentication token for a valid user
  */
 const checkToken = (req, res, next) => {
@@ -55,4 +40,3 @@ const checkToken = (req, res, next) => {
 };
 
 exports.checkToken = checkToken;
-exports.getToken = getToken;
