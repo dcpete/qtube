@@ -2,7 +2,7 @@ const express     = require('express');
 const _           = require('lodash');
 const joi         = require('joi');
 const validator   = require('express-joi-validation')({});
-const auth        = require('../util/util_auth');
+const authutil    = require('../util/util_auth');
 
 const router      = new express.Router();
 
@@ -29,10 +29,7 @@ const formatMongooseError = (error) => {
  * Sign up (create) a user
  */
 router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
-  const email = req.body.email;
-  const username = req.body.username;
-  const password = req.body.password;
-  auth.signUp(email, username, password, (error, user, token) => {
+  authutil.signUp(req, (error, user, token) => {
     if (error) {
       switch (error.name) {
         case 'ValidationError':
@@ -41,7 +38,8 @@ router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
         default:
           res.status(500).json({
             message: 'Could not create user'
-          });  
+          });
+          break;
       }
     }
     else {
@@ -60,21 +58,25 @@ router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
 router.post('/login', validator.body(joiUserLogin), (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-  auth.logIn(email, password, (error, user, token) => {
+  authutil.logIn(req, (error, user, token) => {
+    console.log('route auth error ' + error);
+    console.log('route auth user ' + user);
+    console.log('route auth token ' + token);
     if (error) {
-      if (error.name === 'ValidationError') {
-        res.status(400).json(formatMongooseError(error));
-      }
-      else if (error.name === 'CredentialsError') {
-        res.status(401).json(error);
-      }
-      else if (error.name === 'DatabaseError') {
-        res.status(500).json(error);
-      }
-      else {
-        res.status(500).json({
-          message: 'Could not log in user'
-        });
+      switch (error.name) {
+        case 'ValidationError':
+          res.status(400).json(formatMongooseError(error));
+          break;
+        case 'CredentialsError':
+          res.status(401).json(error);
+          break;
+        case 'DatabaseError':
+          res.status(500).json(error);
+          break;
+        default:
+          res.status(500).json({
+            message: 'Could not log in user'
+          });
       }
     }
     else {
