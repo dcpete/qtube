@@ -1,8 +1,7 @@
-const config = require('./test_config');
-
 const expect = require("chai").expect;
-const server = require("supertest").agent(config.uri);
 
+const testuser = require('./test_config').creds.signup;
+const badcreds = require('./test_config').creds.bad;
 const fn = require('./test_functions');
 
 describe("AUTH - SIGNUP (not authenticated)", () => {
@@ -10,35 +9,35 @@ describe("AUTH - SIGNUP (not authenticated)", () => {
   
   it("should return an error if any of the fields are empty", (done) => {
     // No email
-    fn.createTestUser(null, config.creds.signup.username, config.creds.signup.password, (err, res) => {
+    fn.createTestUser(null, testuser.username, testuser.password, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     // No username
-    fn.createTestUser(config.creds.signup.email, null, config.creds.signup.password, (err, res) => {
+    fn.createTestUser(testuser.email, null, testuser.password, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     // No password
-    fn.createTestUser(config.creds.signup.email, config.creds.signup.username, null, (err, res) => {
+    fn.createTestUser(testuser.email, testuser.username, null, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     done();
   });
   it("should return an error if email is not proper format", (done) => {
     // No email
-    fn.createTestUser(config.creds.bad.notemailformat, config.creds.signup.username, config.creds.signup.password, (err, res) => {
+    fn.createTestUser(badcreds.notemailformat, testuser.username, testuser.password, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     done();
   });
   it("should return an error if password less than 8 characters", (done) => {
     // No email
-    fn.createTestUser(config.creds.signup.email, config.creds.signup.username, config.creds.bad.shortPassword, (err, res) => {
+    fn.createTestUser(testuser.email, testuser.username, badcreds.shortPassword, (err, res) => {
       expect(res.status).to.be.equal(400);
     });
     done();
   });
   it("should allow a user to sign up", (done) => {
-    fn.createTestUser(config.creds.signup.email, config.creds.signup.username, config.creds.signup.password, (err, res) => {
+    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
       expect(res.status).to.be.equal(201);
       expect(res.body.user._id).to.exist;
       expect(res.body.token).to.exist;

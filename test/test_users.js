@@ -1,8 +1,6 @@
-const config          = require('./test_config');
+const expect = require("chai").expect;
 
-const expect          = require("chai").expect;
-const server          = require("supertest").agent(config.uri);
-
+const testuser = require('./test_config').creds.users;
 const fn = require("./test_functions");
 
 describe("USERS (not authenticated)", () => {
@@ -10,19 +8,20 @@ describe("USERS (not authenticated)", () => {
   let token = null;
 
   before((done) => {
-    fn.createTestUser(config.creds.users.email, config.creds.users.username, config.creds.users.password, (err, res) => {
+    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
       token = res.body.token;
       id = res.body.user._id;
       done();
     });
   })
-  it("should return info about a given user", (done) => {
+  it("should return public info about a given user", (done) => {
     fn.getTestUser(id, (err, res) => {
       expect(res.status).to.be.equal(200);
       expect(res.body._id).to.exist;
       expect(res.body._id).to.equal(id);
       expect(res.body.username).to.exist;
-      expect(res.body.username).to.equal(config.creds.users.username);
+      expect(res.body.username).to.equal(testuser.username);
+      expect(res.body.password).to.not.exist;
       done();
     })
   });
@@ -44,7 +43,7 @@ describe("API - USER MANAGEMENT (authenticated)", () => {
 // functions might be needed).  
 
   before((done) => {
-    fn.createTestUser(config.creds.users.email, config.creds.users.username, config.creds.users.password, (err, res) => {
+    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
       id = res.body.user._id;
       token = res.body.token;
       done();
@@ -69,7 +68,7 @@ describe("API - USER MANAGEMENT (authenticated)", () => {
     fn.editTestUser(token, change, (err, res) => {
       expect(res.status).to.be.equal(200);
       expect(res.body).to.exist;
-      fn.logInTestUser(config.creds.users.email, change.password, (err, res) => {
+      fn.logInTestUser(testuser.email, change.password, (err, res) => {
         expect(res.status).to.be.equal(200);
         done();
       });

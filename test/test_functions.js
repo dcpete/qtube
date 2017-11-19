@@ -77,6 +77,14 @@ this.deleteChannel = (token, url, callback) => {
     });
 }
 
+this.getChannels = (query, callback) => {
+  return server
+    .get(`/api/channels?${query}`)
+    .end((err, res) => {
+      return typeof callback === 'function' && callback(err, res);
+    });
+}
+
 this.editChannel = (token, url, body, callback) => {
   return server
     .patch(url)

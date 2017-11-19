@@ -1,8 +1,7 @@
-const config          = require('./test_config');
+const expect = require("chai").expect;
 
-const expect          = require("chai").expect;
-const server          = require("supertest").agent(config.uri);
-
+const testuser = require('./test_config').creds.channels;
+const otheruser = require('./test_config').creds.login;
 const fn = require('./test_functions');
 
 describe("API - CHANNELS (authenticated)", () => {
@@ -12,12 +11,12 @@ describe("API - CHANNELS (authenticated)", () => {
 
   before((done) => {
     // Create user for testing "not owner" operations
-    fn.createTestUser(config.creds.login.email, config.creds.login.username, config.creds.login.password, (err, res) => {
+    fn.createTestUser(otheruser.email, otheruser.username, otheruser.password, (err, res) => {
       expect(err).to.not.exist;
       expect(res.body.token).to.exist;
       notOwnerToken = res.body.token;
     })
-    fn.createTestUser(config.creds.channels.email, config.creds.channels.username, config.creds.channels.password, (err, res) => {
+    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
       expect(err).to.not.exist;
       expect(res.body.token).to.exist;
       ownerToken = res.body.token;
@@ -88,11 +87,6 @@ describe("API - CHANNELS (authenticated)", () => {
   });
 });
 
-// Get rid of sharing test users between test files, localize to each one
-// Export the emails/passwords if they need to be cleaned up later (i.e. haven't tested delete yet)
-// Also, try to figure out why mongo is cool with duplicate users right now
-
-
 describe("API - CHANNELS (not authenticated)", () => {
   var token = null;
   var testChannel1 = null;
@@ -100,7 +94,7 @@ describe("API - CHANNELS (not authenticated)", () => {
   var testChannel3 = null;
 
   before((done) => {
-    fn.createTestUser(config.creds.channels.email, config.creds.channels.username, config.creds.channels.password, (err, res) => {
+    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
       expect(err).to.not.exist;
       expect(res.body.token).to.exist;
       expect(res.body.user).to.exist;
@@ -132,47 +126,43 @@ describe("API - CHANNELS (not authenticated)", () => {
   });
 
   it("should return 400 if search with no query", (done) => {
-    server
-      .get("/api/channels")
-      .end((err, res) => {
-        expect(res.status).to.equal(400);
-        done();
-      });
+    fn.getChannels('', (err, res) => {
+      expect(res.status).to.be.equal(400);
+      done();
+    });
   });
   
   it("should find a channel from a query", (done) => {
-    server
-      .get("/api/channels?name=test+channel+1")
-      .expect("Content-type", /json/)
-      .expect(200)
-      .end((err, res) => {
-        expect(res.body).to.exist;
-        expect(res.body.name).to.equal()
-        done();
-      });
+    const query = "name=test+channel+1";
+    fn.getChannels(query, (err, res) => {
+      expect(res.status).to.be.equal(200);
+      expect(res.body.length).to.be.equal(1);
+      expect(res.body[0].name).to.be.equal("test channel 1");
+      done();
+    });
   });
-  it.skip("should find multiple channels from a query");
 
-  it.skip("should return 401 for any unauthenticated POST request", (done) => {
-    server
-      .post("/api/channels")
-      .expect("Content-type", /json/)
-      .expect(401)
-      .end((err, res) => {
-        expect(res.status).to.be.equal(401);
-        done();
-      });
+  it("should find multiple channels from a query", (done) => {
+    const query = "name=test+channel";
+    fn.getChannels(query, (err, res) => {
+      expect(res.status).to.be.equal(200);
+      expect(res.body.length).to.be.equal(3);
+      done();
+    });
+  });
+
+  it("should return 401 for unauthenticated channel create", (done) => {
+    fn.createChannel(null, "test channel", (err, res) => {
+      expect(res.status).to.be.equal(401);
+      done();
+    });
   });
   
-  it.skip("should return 401 for any unauthenticated DELETE request", (done) => {
-    server
-      .delete("/api/channels")
-      .expect("Content-type", /json/)
-      .expect(401)
-      .end((err, res) => {
-        expect(res.status).to.be.equal(401);
-        done();
-      });
+  it("should return 401 for unauthenticated channel delete", (done) => {
+    fn.deleteChannel(null, testChannel1.url, (err, res) => {
+      expect(res.status).to.be.equal(401);
+      done();
+    });
   });
 
   after((done) => {

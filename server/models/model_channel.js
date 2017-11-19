@@ -98,7 +98,11 @@ const deleteChannel = function (id, user, callback) {
   });
 }
 
-const searchChannel = function(params, callback) {
+const searchChannel = function (params, callback) {
+  // Make each parameter a regex so exact match not required
+  Object.keys(params).forEach((key) => {
+    params[key] = { $regex: params[key], $options: 'i' };
+  })
   this
     .find(params)
     .exec((error, channels) => {
