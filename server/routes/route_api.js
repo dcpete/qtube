@@ -141,14 +141,21 @@ router.patch('/channels/:_id', validator.params(joiID), validator.body(joiChanne
 
 // Delete a specific channel
 router.delete('/channels/:_id', validator.params(joiID), (req, res, next) => {
-  Channel.delete(req.params._id, (error, channel) => {
+  Channel.delete(req.params._id, req.user, (error, channel) => {
     if (error) {
-      res.status(500).json({
-        message: 'Could not delete channel'
-      });
-    }
-    else if (!channel) {
-      res.status(404).end;
+      switch (error.name) {
+        case "UnauthorizedError":
+          res.status(403).send(error);
+          break;
+        case "NotFoundError":
+          res.status(404).end();
+          break;
+        case "DatabaseError":
+          res.status(500).send(error);
+          break;
+        default:
+          res.status(500).end();
+      }
     }
     else {
       res.json(channel);
@@ -195,7 +202,6 @@ router.get('/users/:userid', (req, res, next) => {
 /**
  * Update user
  */
-
 router.patch('/users', validator.body(joiUserEdit), (req, res, next) => {
   User.edit(req.user._id, req.body, (error, user) => {
     if (error) {
@@ -231,50 +237,5 @@ router.delete('/users', (req, res, next) => {
     }
   });
 });
-/*
-router.delete('/users', (req, res, next) => {
-  console.log(req.user);
-  const userid = req.user._id;
-
-  User
-    .findById(userid)
-    .exec((error, user) => {
-      // Return 500 for error querying user
-      if (error) {
-        console.log("Error: " + error);
-        return res.status(500).json({
-          message: 'Could not retrieve user'
-        });
-      }
-      // Return 404 for user not found
-      else if (!user) {
-        return res.status(404).json({
-          message: 'User not found'
-        })
-      }
-      // Return 403 if user does not own user  
-      else if (user._id.toString() !== req.user._id.toString()) {
-        return res.status(403).json({
-          message: 'Cannot delete another user'
-        });
-      }
-      // Try to delete user  
-      else {
-        user
-          .remove((error, user) => {
-            // Return 500 if error deleting user
-            if (error) {
-              console.log("Error: " + error);
-              return res.status(500).json({
-                message: 'Could not delete user'
-              });
-            }
-            // Return 200 and user for successful delete
-            res.json(_.omit(user.toJSON(), ['local', 'email', '__v']));
-          });
-      }
-    });
-});
-*/
 
 module.exports = router;

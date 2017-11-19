@@ -6,24 +6,28 @@ const server          = require("supertest").agent(config.uri);
 const fn = require('./test_functions');
 
 describe("API - CHANNELS (authenticated)", () => {
-  let id = null;
-  let token = null;
+  let ownerToken = null;
+  let notOwnerToken = null;
   let url = null;
 
   before((done) => {
+    // Create user for testing "not owner" operations
+    fn.createTestUser(config.creds.login.email, config.creds.login.username, config.creds.login.password, (err, res) => {
+      expect(err).to.not.exist;
+      expect(res.body.token).to.exist;
+      notOwnerToken = res.body.token;
+    })
     fn.createTestUser(config.creds.channels.email, config.creds.channels.username, config.creds.channels.password, (err, res) => {
       expect(err).to.not.exist;
       expect(res.body.token).to.exist;
-      expect(res.body.user._id).to.exist;
-      token = res.body.token;
-      id = res.body.user._id;
+      ownerToken = res.body.token;
       done();
     });
   });
 
   it("should be able to create a channel if authenticated", (done) => {
-    expect(token).to.exist;
-    fn.createChannel(token, "test channel", (err, res) => {
+    expect(ownerToken).to.exist;
+    fn.createChannel(ownerToken, "test channel", (err, res) => {
       expect(res.status).to.be.equal(201);
       url = res.headers.location;
       done();
@@ -31,34 +35,53 @@ describe("API - CHANNELS (authenticated)", () => {
   });
   
   it("should be able to change the channel name", (done) => {
-    const updatedName = 'changed name';
     expect(url).to.exist;
-    expect(token).to.exist;
-    fn.editChannel(token, url, { name: updatedName }, (err, res) => {
+    expect(ownerToken).to.exist;
+    const updatedName = 'changed name';
+    fn.editChannel(ownerToken, url, { name: updatedName }, (err, res) => {
       expect(res.status).to.be.equal(200);
       expect(res.body.name).to.be.equal(updatedName);
       done();
     })
   });
 
+  it.skip("should be able to add videos to the channel");
+  it.skip("should be able to change the currently playing video");
+  it("should return 403 when notOwner changes channel name", (done) => {
+    expect(url).to.exist;
+    expect(notOwnerToken).to.exist;
+    const updatedName = 'changed name';
+    fn.editChannel(notOwnerToken, url, { name: updatedName }, (err, res) => {
+      expect(res.status).to.be.equal(403);
+      done();
+    })
+  });
+  it("should return 403 when notOwner deletes a channel", (done) => {
+    expect(url).to.exist;
+    expect(notOwnerToken).to.exist;
+    fn.deleteChannel(notOwnerToken, url, (err, res) => {
+      expect(res.status).to.be.equal(403);
+      done();
+    });
+  });
+
+
   it("should be able to delete a channel if authenticated", (done) => {
     expect(url).to.exist;
-    expect(token).to.exist;
-    fn.deleteChannel(token, url, (err, res) => {
+    expect(ownerToken).to.exist;
+    fn.deleteChannel(ownerToken, url, (err, res) => {
       expect(res.status).to.be.equal(200);
       done();
     });
   });
 
-  it.skip("should be able to add videos to the channel");
-  it.skip("should be able to change the currently playing video");
-  it.skip("should not be able to alter another user's channel");
-  it.skip("should not be able to delete another user's channel");
-
   after((done) => {
-    fn.deleteTestUser(token, (err, res) => {
-      if (err) {
-      }
+    fn.deleteTestUser(notOwnerToken, (err, res) => {
+      expect(err).to.not.exist;
+      expect(res.status).to.be.equal(200);
+    });
+    fn.deleteTestUser(ownerToken, (err, res) => {
+      expect(err).to.not.exist;
       expect(res.status).to.be.equal(200);
       done();
     });

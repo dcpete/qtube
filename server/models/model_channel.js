@@ -65,18 +65,35 @@ const getChannelByID = function (id, callback) {
  * @param {string} id 
  * @param {function} callback 
  */
-const deleteChannel = function (id, callback) {
+const deleteChannel = function (id, user, callback) {
   this
     .findById(id)
     .populate('owner')
     .exec((error, channel) => {
-      // Return 500 for error querying channel
-      if (error || !channel) {
-        callback(new Error("Error querying for channel"));
+      if (error) {
+        error = new Error("Error querying for channel");
+        error.name = "DatbaseError";
+        callback(error);
       }
+      else if (!channel) {
+        error = new Error("Channel not found");
+        error.name = "NotFoundError";
+        callback(error);
+      }
+      else if (!channel.owner._id.equals(user._id)) {
+        error = new Error("User does not own channel");
+        error.name = "UnauthorizedError";
+        callback(error);
+      }  
       // Try to delete channel  
       else {
-        channel.remove(callback);
+        channel.remove((error, deletedChannel) => {
+          if (error) {
+            error = new Error("Error updating channel");
+            error.name = "DatabaseError";
+          }
+          callback(error, deletedChannel);
+        });
       }
   });
 }
@@ -110,8 +127,6 @@ const editChannel = function (channelID, user, body, callback) {
         callback(error);
       }
       else if (!channel.owner._id.equals(user._id)) {
-        console.log('channel owner: ' + channel.owner._id);
-        console.log('user ' + user._id);
         error = new Error("User does not own channel");
         error.name = "UnauthorizedError";
         callback(error);
