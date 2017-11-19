@@ -27,7 +27,11 @@ const joiVideo = Joi.object({
   id: Joi.string().length(11).required()
 })
 
-const joiPlaylist = Joi.array().items(joiVideo);
+const joiPlaylist = Joi.array().items({
+  added: Joi.date(),
+  playcount: Joi.number(),
+  video: joiVideo
+});
 
 const joiChannel = Joi.object({
   name: Joi.string().min(1).max(50),

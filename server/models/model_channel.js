@@ -13,10 +13,22 @@ const ChannelSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  playlist: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'YoutubeVideo'
-  }],
+  playlist: [
+    {
+      added: {
+        type: Date,
+        default: Date.now
+      },
+      playcount: {
+        type: Number,
+        default: 0
+      },
+      video: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'YoutubeVideo'
+      }
+    }
+  ],
   currentVideo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'YoutubeVideo',
