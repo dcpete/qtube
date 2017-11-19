@@ -13,8 +13,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     unique: true
   },
-  local: {
-    password: String
+  password: {
+    type: String,
+    select: false
   }
 });
 
@@ -24,9 +25,7 @@ const createUser = function (email, username, password, callback) {
   const newUser = new this({
     email: email,
     username: username,
-    local: {
-      password: hashPassword(password)
-    }
+    password: hashPassword(password)
   });
 
   newUser.save(callback);
@@ -36,11 +35,9 @@ const deleteUser = function (id, callback) {
   this
     .findById(id)
     .exec((error, user) => {
-      // Return 500 for error querying channel
       if (error || !user) {
         callback(new Error("Error querying for user"));
       }
-      // Try to delete channel  
       else {
         user.remove(callback);
       }
@@ -56,17 +53,35 @@ const getUserByID = function (id, callback) {
 const getUserByEmail = function (email, callback) {
   this
     .findOne({ 'email': email })
-    .exec(callback)
+    .exec(callback);
+}
+
+const getUserSensitiveInfo = function (email, callback) {
+  this
+    .findOne({ 'email': email })
+    .select('+password')
+    .exec(callback);
+}
+
+const updateUser = function (id, change, callback) {
+  if (change.password) {
+    change.password = hashPassword(change.password);
+  }
+  this
+    .findByIdAndUpdate(id, { $set: change }, { new: true })
+    .exec(callback);
 }
 
 UserSchema.statics.create = createUser;
 UserSchema.statics.getByID = getUserByID;
 UserSchema.statics.getUserByEmail = getUserByEmail;
 UserSchema.statics.delete = deleteUser;
+UserSchema.statics.edit = updateUser;
+UserSchema.statics.getUserSensitiveInfo = getUserSensitiveInfo;
 
 // Model method to check if password is correct
 UserSchema.methods.comparePassword = function comparePassword(password, callback) {
-  return bcrypt.compare(password, this.local.password, callback);
+  return bcrypt.compare(password, this.password, callback);
 };
 
 // Model method to hash the password

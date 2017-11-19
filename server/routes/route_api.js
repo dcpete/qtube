@@ -1,8 +1,8 @@
 const express     = require('express');
 const Channel     = require('../models/model_channel');
-const User = require('../models/model_user');
-const Joi = require('joi');
-const validator = require('express-joi-validation')({});
+const User        = require('../models/model_user');
+const Joi         = require('joi');
+const validator   = require('express-joi-validation')({});
 const _           = require('lodash');
 
 const router      = new express.Router();
@@ -12,9 +12,15 @@ const router      = new express.Router();
  * Joi validation objects
  * ========================================
  */
-const joiUser = Joi.object({
+const joiChannelUser = Joi.object({
   username: Joi.string().max(16),
+  password: Joi.string().min(8),
   _id: Joi.string().hex().length(24).required()
+});
+
+const joiUserEdit = Joi.object({
+  username: Joi.string().max(16),
+  password: Joi.string().min(8)
 });
 
 const joiVideo = Joi.object({
@@ -27,7 +33,7 @@ const joiChannel = Joi.object({
   name: Joi.string().min(1).max(50),
   _id: Joi.string().length(24).hex(),
   created: Joi.date(),
-  owner: joiUser,
+  owner: joiChannelUser,
   playlist: joiPlaylist,
   currentVideo: joiVideo,
   currentVideoStarted: Joi.date(),
@@ -149,7 +155,7 @@ router.get('/users/:userid', (req, res, next) => {
         message: 'Could not find user'
       })
     }
-    res.json(_.omit(user.toJSON(), ['local', 'email', '__v']));
+    res.json(user);
   });
 });
 
@@ -158,8 +164,24 @@ router.get('/users/:userid', (req, res, next) => {
  */
 
 /**
- * Change username
+ * Update user
  */
+
+router.patch('/users', validator.body(joiUserEdit), (req, res, next) => {
+  User.edit(req.user._id, req.body, (error, user) => {
+    if (error) {
+      res.status(500).json({
+        message: 'Could not edit user'
+      });
+    }
+    else if (!user){
+      res.status(404).end;
+    }
+    else {
+      res.json(user);
+    }
+  })
+})
 
 /**
  * Delete a user

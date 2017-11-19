@@ -46,6 +46,17 @@ this.logInTestUser = (email, password, callback) => {
     });
 }
 
+this.editTestUser = (token, change, callback) => {
+  return server
+    .patch('/api/users')
+    .set("Authorization", "Bearer " + token)
+    .send(change)
+    .type('form')
+    .end((err, res) => {
+      return typeof callback === 'function' && callback(err, res);
+    })
+}
+
 this.createChannel = (token, title, callback) => {
   return server
     .post("/api/channels")

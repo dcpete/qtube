@@ -59,9 +59,6 @@ router.post('/login', validator.body(joiUserLogin), (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   authutil.logIn(req, (error, user, token) => {
-    console.log('route auth error ' + error);
-    console.log('route auth user ' + user);
-    console.log('route auth token ' + token);
     if (error) {
       switch (error.name) {
         case 'ValidationError':

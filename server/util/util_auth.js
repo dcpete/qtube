@@ -6,7 +6,7 @@ const logIn = (req, done) => {
   const password = req.body.password;
 
   // find a user by email address
-  return User.getUserByEmail(email, (err, user) => {
+  return User.getUserSensitiveInfo(email, (err, user) => {
     if (err) {
       // Error looking up the user in the database
       const error = new Error('Error retrieving user ' + email);
@@ -23,13 +23,11 @@ const logIn = (req, done) => {
       // check if a hashed user's password is equal to a value saved in the database
       return user.comparePassword(password, (err, isMatch) => {
         if (err) {
-          console.log(err);
           const error = new Error('Error processing password');
           error.name = 'CredentialsError';
           return done(error);
         }
         else if (!isMatch) {
-          console.log('password ' + password + ' is not a match');
           const error = new Error('Incorrect email or password');
           error.name = 'CredentialsError';
           return done(error);
