@@ -127,7 +127,7 @@ const searchChannel = function (params, callback) {
     })
 }
 
-const editChannel = function (channelID, user, body, callback) {
+const editChannel = function (channelID, user, action, payload, callback) {
   this
     .findById(channelID)
     .populate('owner')
@@ -148,14 +148,22 @@ const editChannel = function (channelID, user, body, callback) {
         callback(error);
       }
       else {
-        channel.set(body);
-        channel.save((error, updatedChannel) => {
-          if (error) {
-            error = new Error("Error updating channel");
-            error.name = "DatabaseError";
-          }
-          callback(error, updatedChannel);
-        })
+        switch (action) {
+          case "changeName":
+            channel.set(payload);
+            channel.save((error, updatedChannel) => {
+              if (error) {
+                error = new Error("Error updating channel");
+                error.name = "DatabaseError";
+              }
+              callback(error, updatedChannel);
+            })  
+            break;
+          case "addVideo":
+            break;
+          default:
+            break;
+        }
       }
     });
 }

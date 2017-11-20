@@ -36,10 +36,15 @@ describe("API - CHANNELS (authenticated)", () => {
   it("should be able to change the channel name", (done) => {
     expect(url).to.exist;
     expect(ownerToken).to.exist;
-    const updatedName = 'changed name';
-    fn.editChannel(ownerToken, url, { name: updatedName }, (err, res) => {
+    const body = {
+      action: 'changeName',
+      payload: {
+        name: 'changed name'
+      }
+    }
+    fn.editChannel(ownerToken, url, body, (err, res) => {
       expect(res.status).to.be.equal(200);
-      expect(res.body.name).to.be.equal(updatedName);
+      expect(res.body.name).to.be.equal(body.payload.name);
       done();
     })
   });
@@ -49,8 +54,13 @@ describe("API - CHANNELS (authenticated)", () => {
   it("should return 403 when notOwner changes channel name", (done) => {
     expect(url).to.exist;
     expect(notOwnerToken).to.exist;
-    const updatedName = 'changed name';
-    fn.editChannel(notOwnerToken, url, { name: updatedName }, (err, res) => {
+    const body = {
+      action: 'changeName',
+      payload: {
+        name: 'changed name'
+      }
+    }
+    fn.editChannel(notOwnerToken, url, body, (err, res) => {
       expect(res.status).to.be.equal(403);
       done();
     })

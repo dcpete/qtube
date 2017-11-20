@@ -26,6 +26,7 @@ models.connect(dbconfig.uri);
 
 // tell Express to parse HTTP body messages
 express.use(bodyParser.urlencoded({ extended: false }));
+express.use(bodyParser.json());
 
 // create logs directory
 fs.existsSync(logConfig.directory) || fs.mkdirSync(logConfig.directory)

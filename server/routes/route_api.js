@@ -45,8 +45,10 @@ const joiChannel = Joi.object({
 });
 
 const joiChannelEdit = Joi.object({
-  name: Joi.string().min(1).max(50),
-  owner: joiUser
+  action: Joi.string().required(),
+  payload: Joi.object({
+    name: Joi.string()
+  })
 })
 
 const joiID = Joi.object().keys({
@@ -58,6 +60,27 @@ const joiID = Joi.object().keys({
  * Channels
  * ========================================
  */
+
+const channelCallback = (res, error, channel) => {
+  if (error) {
+    switch (error.name) {
+      case "UnauthorizedError":
+        res.status(403).send(error);
+        break;
+      case "NotFoundError":
+        res.status(404).end();
+        break;
+      case "DatabaseError":
+        res.status(500).send(error);
+        break;
+      default:
+        res.status(500).end();
+    }
+  }
+  else {
+    res.json(channel);
+  }
+}
 
 // Create a channel
 router.post('/channels', validator.body(joiChannel), (req, res, next) => {
@@ -77,17 +100,7 @@ router.post('/channels', validator.body(joiChannel), (req, res, next) => {
 // Get a specific channel by _id
 router.get('/channels/:_id', validator.params(joiID), (req, res, next) => {
   Channel.getByID(req.params.channelid, (error, channel) => {
-    if (error) {
-      res.status(500).json({
-        message: 'Could not retrieve channel'
-      });
-    }
-    else if (!channel) {
-      res.status(404).end;
-    }
-    else {
-      res.json(channel);
-    }  
+    channelCallback(res, error, channel);
   });
 });
 
@@ -100,45 +113,25 @@ router.get('/channels', validator.query(joiChannel), (req, res, next) => {
   }
   else {
     Channel.search(req.query, (error, channels) => {
-      if (error) {
-        res.status(500).json({
-          message: 'Could not search for channels'
-        });
-      }
-      else {
-        res.json(channels);
-      }
+      channelCallback(res, error, channels);
     });
   }
 });
 
 // Edit a specific channel
 router.patch('/channels/:_id', validator.params(joiID), validator.body(joiChannelEdit), (req, res, next) => {
-  if (!req.body || _.isEmpty(req.body)) {
+  if (_.isEmpty(req.body.action) || _.isEmpty(req.body.payload)) {
     res.status(400).json({
       message: 'Request sent with nothing to update'
     });
   }
   else {
-    Channel.edit(req.params._id, req.user, req.body, (error, channel) => {
-      if (error) {
-        switch (error.name) {
-          case "UnauthorizedError":
-            res.status(403).send(error);
-            break;
-          case "NotFoundError":
-            res.status(404).end();
-            break;
-          case "DatabaseError":
-            res.status(500).send(error);
-            break;
-          default:
-            res.status(500).end();
-        }
-      }
-      else {
-        res.json(channel);
-      }
+    const channelID = req.params._id;
+    const user = req.user;
+    const action = req.body.action;
+    const payload = req.body.payload;
+    Channel.edit(channelID, user, action, payload, (error, channel) => {
+      channelCallback(res, error, channel);
     })
   }
 });
@@ -146,24 +139,7 @@ router.patch('/channels/:_id', validator.params(joiID), validator.body(joiChanne
 // Delete a specific channel
 router.delete('/channels/:_id', validator.params(joiID), (req, res, next) => {
   Channel.delete(req.params._id, req.user, (error, channel) => {
-    if (error) {
-      switch (error.name) {
-        case "UnauthorizedError":
-          res.status(403).send(error);
-          break;
-        case "NotFoundError":
-          res.status(404).end();
-          break;
-        case "DatabaseError":
-          res.status(500).send(error);
-          break;
-        default:
-          res.status(500).end();
-      }
-    }
-    else {
-      res.json(channel);
-    }
+    channelCallback(res, error, channel);
   });
 });
 

@@ -90,7 +90,6 @@ this.editChannel = (token, url, body, callback) => {
     .patch(url)
     .set("Authorization", "Bearer " + token)
     .send(body)
-    .type('form')
     .end((err, res) => {
       return typeof callback === 'function' && callback(err, res);
     })
