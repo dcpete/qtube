@@ -92,7 +92,7 @@ const deleteChannel = function (id, user, callback) {
         error.name = "NotFoundError";
         callback(error);
       }
-      else if (!channel.owner._id.equals(user._id)) {
+      else if (!channel.owner || !channel.owner._id.equals(user._id)) {
         error = new Error("User does not own channel");
         error.name = "UnauthorizedError";
         callback(error);

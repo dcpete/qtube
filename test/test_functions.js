@@ -1,5 +1,9 @@
 const config = require('./test_config');
+const dbconfig    = require('../server/config/config_database');
 const server = require("supertest").agent(config.uri);
+const models = require('../server/models');
+const YoutubeVideo = require('../server/models/model_youtube_video');
+const googleUtil = require('../server/util/util_google');
 
 this.createTestUser = (email, username, password, callback) => {
   return server
@@ -93,4 +97,26 @@ this.editChannel = (token, url, body, callback) => {
     .end((err, res) => {
       return typeof callback === 'function' && callback(err, res);
     })
+}
+
+this.addVideo = (youtubeid, callback) => {
+  models.connect(dbconfig.uri);
+  return googleUtil.getVideoById(youtubeid, (error, video) => {
+    if (error) {
+      return callback(error);
+    }
+    else {
+      return YoutubeVideo.create(video, callback)
+    }
+  });
+}
+
+this.deleteVideo = (id, callback) => {
+  models.connect(dbconfig.uri);
+  return YoutubeVideo.delete(id, callback);
+}
+
+this.getVideo = (youtubeid, callback) => {
+  models.connect(dbconfig.uri);
+  return YoutubeVideo.getByYoutubeId(youtubeid, callback);
 }
