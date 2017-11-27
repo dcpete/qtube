@@ -99,7 +99,7 @@ this.editChannel = (token, url, body, callback) => {
     })
 }
 
-this.addVideo = (youtubeid, callback) => {
+this.createVideo = (youtubeid, callback) => {
   models.connect(dbconfig.uri);
   return googleUtil.getVideoById(youtubeid, (error, video) => {
     if (error) {

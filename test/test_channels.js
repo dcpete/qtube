@@ -8,6 +8,8 @@ describe("API - CHANNELS (authenticated)", () => {
   let ownerToken = null;
   let notOwnerToken = null;
   let url = null;
+  const youtubeId = 'A52--FKUQgU';
+  let youtubeDbId = null;
 
   before((done) => {
     // Create user for testing "not owner" operations
@@ -49,7 +51,24 @@ describe("API - CHANNELS (authenticated)", () => {
     })
   });
 
-  it.skip("should be able to add videos to the channel");
+  it("should be able to add videos to the channel", (done) => {
+    expect(url).to.exist;
+    expect(ownerToken).to.exist;
+    const body = {
+      action: 'addVideo',
+      payload: {
+        youtubeId: youtubeId
+      }
+    }
+    fn.editChannel(ownerToken, url, body, (err, res) => {
+      const playlist = res.body.playlist;
+      expect(res.status).to.be.equal(200);
+      expect(playlist.length).to.be.equal(1);
+      expect(playlist[0].video.youtubeId).to.be.equal(body.payload.youtubeId);
+      youtubeDbId = playlist[0].video._id;
+      done();
+    })
+  });
   it.skip("should be able to change the currently playing video");
   it("should return 403 when notOwner changes channel name", (done) => {
     expect(url).to.exist;

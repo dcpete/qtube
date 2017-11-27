@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const YoutubeVideo = require('./model_youtube_video');
+const googleUtil = require('../util/util_google');
 
 const ChannelSchema = mongoose.Schema({
   created: {
@@ -159,11 +161,64 @@ const editChannel = function (channelID, user, action, payload, callback) {
               callback(error, updatedChannel);
             })  
             break;
-          case "addVideo":
+          case "addVideo":  
+            
             break;
           default:
             break;
         }
+      }
+    });
+}
+
+const addVideoToChannel = function (channelId, youtubeId, callback) {
+  this.findById(channelId)
+    .populate({
+      path: 'playlist',
+      populate: {
+        path: 'video'
+      }
+    })
+    .exec((error, channel) => {
+      if (error) {
+        error = new Error("Error querying for channel");
+        error.name = "DatabaseError";
+        callback(error);
+      }
+      else if (!channel) {
+        error = new Error("Channel not found");
+        error.name = "NotFoundError";
+        callback(error);
+      }
+      else {
+        YoutubeVideo.getByYoutubeId(youtubeId, (error, video) => {
+          if (error) {
+            switch (error.name) {
+              case "NotFoundError":
+                googleUtil.getVideoById(youtubeId, (error, videoFromYT) => {
+                  YoutubeVideo.create(videoFromYT, (error, dbVideo) => {
+                    channel.playlist.push({
+                      added: Date.now(),
+                      playcount: 0,
+                      video: dbVideo
+                    });
+                    callback(error, channel);
+                  });
+                });
+                break;
+              default:
+                callback(error);
+            }
+          }
+          else {
+            channel.playlist.push({
+              added: Date.now(),
+              playcount: 0,
+              video: video
+            });
+            callback(error, channel);
+          }
+        });  
       }
     });
 }
@@ -173,5 +228,6 @@ ChannelSchema.statics.getByID = getChannelByID;
 ChannelSchema.statics.delete = deleteChannel;
 ChannelSchema.statics.search = searchChannel;
 ChannelSchema.statics.edit = editChannel;
+ChannelSchema.statics.addVideo = addVideoToChannel;
 
 module.exports = mongoose.model('Channel', ChannelSchema);

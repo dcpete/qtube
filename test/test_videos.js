@@ -7,14 +7,14 @@ describe("VIDEOS (model functions)", (done) => {
   let testvideo = null;
   it("should be able to create a video", (done) => {
     // https://www.youtube.com/watch?v=NouZB6QuCys
-    fn.addVideo("NouZB6QuCys", (error, video) => {
+    fn.createVideo("NouZB6QuCys", (error, video) => {
       expect(video).to.exist;
       testvideo = video;
       done();
     });
   });
   it("should not be able to add a duplicate video", (done) => {
-    fn.addVideo("NouZB6QuCys", (error, video) => {
+    fn.createVideo("NouZB6QuCys", (error, video) => {
       expect(error).to.exist;
       done();
     });

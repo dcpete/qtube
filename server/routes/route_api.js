@@ -47,7 +47,8 @@ const joiChannel = Joi.object({
 const joiChannelEdit = Joi.object({
   action: Joi.string().required(),
   payload: Joi.object({
-    name: Joi.string()
+    name: Joi.string(),
+    youtubeId: Joi.string().length(11)
   })
 })
 
@@ -126,13 +127,26 @@ router.patch('/channels/:_id', validator.params(joiID), validator.body(joiChanne
     });
   }
   else {
-    const channelID = req.params._id;
+    const channelId = req.params._id;
     const user = req.user;
     const action = req.body.action;
     const payload = req.body.payload;
-    Channel.edit(channelID, user, action, payload, (error, channel) => {
-      channelCallback(res, error, channel);
-    })
+    switch (action) {
+      case 'changeName':
+        Channel.edit(channelId, user, action, payload, (error, channel) => {
+          channelCallback(res, error, channel);
+        });
+        break;
+      case 'addVideo':
+        Channel.addVideo(channelId, payload.youtubeId, (error, channel) => {
+          channelCallback(res, error, channel);
+        })
+        break;
+      default:
+        res.status(400).json({
+          message: 'Bad request action'
+        });
+    }
   }
 });
 

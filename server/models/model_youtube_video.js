@@ -51,7 +51,6 @@ const createVideo = function (video, callback) {
 }
 
 const deleteVideo = function (id, callback) {
-  console.log(id);
   this
   .findById(id)
     .exec((error, video) => {
