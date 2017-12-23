@@ -29,25 +29,27 @@ express.use(bodyParser.urlencoded({ extended: false }));
 express.use(bodyParser.json());
 
 // create logs directory
-fs.existsSync(logConfig.directory) || fs.mkdirSync(logConfig.directory)
+fs.existsSync(logConfig.directory) || fs.mkdirSync(logConfig.directory);
+
 // use a rotating write stream
 const accessLogStream = rfs('access.log', {
   interval: logConfig.interval, // rotate daily
   path: logConfig.directory,
   maxFiles: logConfig.maxFiles
-})
+});
+
 // initialize logger
 express.use(morgan('combined', { stream: accessLogStream }));
 
 // authenticaion middleware
 express.use('/api', checkToken);
 
-// routes
+// top-level routes
 express.use('/auth', authRoutes);
 express.use('/api', apiRoutes);
 
 // Always return the main index.html, so react-router renders the route in the client
-// NOTE this goes away after development (handled by nginx)
+// NOTE this goes away after development (static files will be served by nginx)
 express.get('*', (req, res) => { 
   res.sendFile(path.resolve(__dirname, '..', 'dist', 'index.html'));
 });

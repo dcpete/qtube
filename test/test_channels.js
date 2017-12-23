@@ -15,11 +15,13 @@ describe("API - CHANNELS (authenticated)", () => {
     // Create user for testing "not owner" operations
     fn.createTestUser(otheruser.email, otheruser.username, otheruser.password, (err, res) => {
       expect(err).to.not.exist;
+      expect(res.status).to.be.equal(201);
       expect(res.body.token).to.exist;
       notOwnerToken = res.body.token;
     })
     fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
       expect(err).to.not.exist;
+      expect(res.status).to.be.equal(201);
       expect(res.body.token).to.exist;
       ownerToken = res.body.token;
       done();
@@ -30,6 +32,9 @@ describe("API - CHANNELS (authenticated)", () => {
     expect(ownerToken).to.exist;
     fn.createChannel(ownerToken, "test channel", (err, res) => {
       expect(res.status).to.be.equal(201);
+      if (err) {
+        console.log(err);
+      } 
       url = res.headers.location;
       done();
     });
@@ -61,8 +66,9 @@ describe("API - CHANNELS (authenticated)", () => {
       }
     }
     fn.editChannel(ownerToken, url, body, (err, res) => {
-      const playlist = res.body.playlist;
       expect(res.status).to.be.equal(200);
+      expect(res.body.playlist).to.exist;
+      const playlist = res.body.playlist;
       expect(playlist.length).to.be.equal(1);
       expect(playlist[0].video.youtubeId).to.be.equal(body.payload.youtubeId);
       youtubeDbId = playlist[0].video._id;
@@ -195,11 +201,14 @@ describe("API - CHANNELS (not authenticated)", () => {
   });
 
   after((done) => {
-    fn.deleteChannel(testUserToken, testChannel1.url);
-    fn.deleteChannel(testUserToken, testChannel2.url);
-    fn.deleteChannel(testUserToken, testChannel3.url);
-    fn.deleteTestUser(testUserToken, (err, res) => {
-      done();
+    fn.deleteChannel(testUserToken, testChannel1.url, () => {
+      fn.deleteChannel(testUserToken, testChannel2.url, () => {
+        fn.deleteChannel(testUserToken, testChannel3.url, () => {
+          fn.deleteTestUser(testUserToken, (err, res) => {
+            done();
+          });
+        });
+      });
     });
   })
 });

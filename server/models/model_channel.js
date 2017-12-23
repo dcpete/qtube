@@ -196,14 +196,24 @@ const addVideoToChannel = function (channelId, youtubeId, callback) {
             switch (error.name) {
               case "NotFoundError":
                 googleUtil.getVideoById(youtubeId, (error, videoFromYT) => {
-                  YoutubeVideo.create(videoFromYT, (error, dbVideo) => {
-                    channel.playlist.push({
-                      added: Date.now(),
-                      playcount: 0,
-                      video: dbVideo
+                  if (error) {
+                    callback(error);
+                  }
+                  else if (!videoFromYT || _.isEmpty(videoFromYT)) {
+                    error = new Error("Error getting video from youtube");
+                    error.name = "NotFoundError";
+                    callback(error);
+                  }
+                  else {
+                    YoutubeVideo.create(videoFromYT, (error, dbVideo) => {
+                      channel.playlist.push({
+                        added: Date.now(),
+                        playcount: 0,
+                        video: dbVideo
+                      });
+                      callback(error, channel);
                     });
-                    callback(error, channel);
-                  });
+                  }
                 });
                 break;
               default:

@@ -1,21 +1,10 @@
-const express     = require('express');
-const _           = require('lodash');
-const joi         = require('joi');
-const validator   = require('express-joi-validation')({});
-const authutil    = require('../util/util_auth');
+const express = require('express');
+const _ = require('lodash');
+const validator = require('express-joi-validation')({});
+const authutil = require('../util/util_auth');
+const joi = require('../config/config_joi');
 
-const router      = new express.Router();
-
-const joiUserSignup = joi.object({
-  username: joi.string().min(1).max(16).required(),
-  email: joi.string().email().required(),
-  password: joi.string().min(8).required()
-});
-
-const joiUserLogin = joi.object({
-  email: joi.string().email().required(),
-  password: joi.string().min(8).required()
-});
+const router = new express.Router();
 
 const formatMongooseError = (error) => {
   newError = { }
@@ -28,7 +17,7 @@ const formatMongooseError = (error) => {
 /**
  * Sign up (create) a user
  */
-router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
+router.post('/signup', validator.body(joi.userSignup), (req, res, next) => {
   authutil.signUp(req, (error, user, token) => {
     if (error) {
       switch (error.name) {
@@ -55,7 +44,7 @@ router.post('/signup', validator.body(joiUserSignup), (req, res, next) => {
 /**
  * Authenticate a user
  */
-router.post('/login', validator.body(joiUserLogin), (req, res, next) => {
+router.post('/login', validator.body(joi.userLogin), (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   authutil.logIn(req, (error, user, token) => {
