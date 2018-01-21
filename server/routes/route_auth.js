@@ -22,7 +22,11 @@ router.post('/signup', validator.body(joi.userSignup), (req, res, next) => {
     if (error) {
       switch (error.name) {
         case 'ValidationError':
-          res.status(400).json(formatMongooseError(error));
+          // Validation is being done with Joi, so any validation errors that
+          // Mongoose returns should be a unique field error
+          // i.e. somebody tries to create a user with an email that is already 
+          // associated with a user
+          res.status(409).json(formatMongooseError(error));
           break;
         default:
           res.status(500).json({

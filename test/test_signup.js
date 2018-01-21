@@ -45,6 +45,12 @@ describe("AUTH - SIGNUP (not authenticated)", () => {
       done();
     });
   });
+  it("should return 409 if email already associated with user", (done) => {
+    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
+      expect(res.status).to.be.equal(409);
+      done();
+    });
+  })
 
   after((done) => {
     fn.deleteTestUser(token);
