@@ -40,7 +40,7 @@ describe("API - CHANNELS (authenticated)", () => {
     });
   });
   
-  it("should be able to change the channel name", (done) => {
+  it("should let channel owner change the channel name", (done) => {
     expect(url).to.exist;
     expect(ownerToken).to.exist;
     const body = {
@@ -56,7 +56,7 @@ describe("API - CHANNELS (authenticated)", () => {
     })
   });
 
-  it("should be able to add videos to the channel", (done) => {
+  it("should let channel owner add videos to the channel", (done) => {
     expect(url).to.exist;
     expect(ownerToken).to.exist;
     const body = {
@@ -75,7 +75,7 @@ describe("API - CHANNELS (authenticated)", () => {
       done();
     })
   });
-  it.skip("should be able to change the currently playing video");
+  it.skip("should let channel owner change the currently playing video");
   it("should return 403 when notOwner changes channel name", (done) => {
     expect(url).to.exist;
     expect(notOwnerToken).to.exist;
@@ -100,7 +100,7 @@ describe("API - CHANNELS (authenticated)", () => {
     });
   });
 
-  it("should be able to delete a channel if authenticated", (done) => {
+  it("should be able to delete a channel if owner", (done) => {
     expect(url).to.exist;
     expect(ownerToken).to.exist;
     fn.deleteChannel(ownerToken, url, (err, res) => {
