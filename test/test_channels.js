@@ -8,8 +8,8 @@ describe("API - CHANNELS (authenticated)", () => {
   let ownerToken = null;
   let notOwnerToken = null;
   let url = null;
-  const youtubeId = 'A52--FKUQgU';
   let youtubeDbId = null;
+  const testYoutubeId = 'A52--FKUQgU';
 
   before((done) => {
     // Create user for testing "not owner" operations
@@ -62,7 +62,7 @@ describe("API - CHANNELS (authenticated)", () => {
     const body = {
       action: 'addVideo',
       payload: {
-        youtubeId: youtubeId
+        youtubeId: testYoutubeId
       }
     }
     fn.editChannel(ownerToken, url, body, (err, res) => {
@@ -90,7 +90,8 @@ describe("API - CHANNELS (authenticated)", () => {
       done();
     })
   });
-  it("should return 403 when notOwner deletes a channel", (done) => {
+
+  it("should return 403 when user deletes a channel owned by another user", (done) => {
     expect(url).to.exist;
     expect(notOwnerToken).to.exist;
     fn.deleteChannel(notOwnerToken, url, (err, res) => {
@@ -98,7 +99,6 @@ describe("API - CHANNELS (authenticated)", () => {
       done();
     });
   });
-
 
   it("should be able to delete a channel if authenticated", (done) => {
     expect(url).to.exist;

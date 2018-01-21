@@ -6,8 +6,6 @@ const validator = require('express-joi-validation')({});
 
 const router = new express.Router();
 
-//router.use('/channels', channelRoutes);
-
 // Create channel
 router.post('/channels', validator.body(joi.channel), channelRoutes.create);
 // Get channel by id
@@ -19,7 +17,6 @@ router.patch('/channels/:_id', validator.params(joi.mongoId), validator.body(joi
 // Delete channel  
 router.delete('/channels/:_id', validator.params(joi.mongoId), channelRoutes.delete);
   
-//router.use('/users', userRoutes);
 // Get user by id
 router.get('/users/:userid', userRoutes.getById);
 // Edit user  

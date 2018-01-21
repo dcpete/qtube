@@ -1,14 +1,14 @@
 const joi = require('joi');
 
 const joiUser = joi.object({
-  username: joi.string().max(16),
+  username: joi.string().min(1).max(16),
   password: joi.string().min(8),
   _id: joi.string().hex().length(24).required()
 });
 
 const joiUserSignup = joi.object({
   username: joi.string().min(1).max(16).required(),
-  email: joi.string().email().required(),
+  email: joi.string().min(1).email().required(),
   password: joi.string().min(8).required()
 })
 
@@ -18,8 +18,9 @@ const joiUserLogin = joi.object({
 });
 
 const joiUserEdit = joi.object({
-  username: joi.string().max(16),
-  password: joi.string().min(8)
+  username: joi.string().min(1).max(16),
+  password: joi.string().min(8),
+  email: joi.string().min(1).email()
 });
 
 const joiYoutubeVideo = joi.object({

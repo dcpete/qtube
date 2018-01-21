@@ -2,24 +2,29 @@ module.exports = {
   uri : 'http://localhost:8080',
   creds: {
     channels: {
-      username: 'testchannel',
+      username: 'Test Channel',
       password: 'this is my test channels password',
       email: 'testchannel@test.org'
     },
     login: {
-      username: 'testlogin',
+      username: 'Test Login',
       password: 'this is my test user password',
       email: 'testlogin@test.org'
     },
     signup: {
-      username: 'testsignup',
+      username: 'Test Signup',
       password: 'this is my test signup password',
       email: 'testsignup@test.org'
     },
     users: {
-      username: 'testusers',
+      username: 'Test Users',
       password: 'this is my test users password',
-      email: 'testusers@test.org'
+      email: 'testusers@test.org',
+      update: {
+        username: 'New Test Users',
+        password: 'this is my new test users password',
+        email: 'testusersnew@test.org'
+      }
     },
     bad: {
       notemailformat: 'jimsemail',
