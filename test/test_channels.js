@@ -9,7 +9,8 @@ describe("API - CHANNELS (authenticated)", () => {
   let notOwnerToken = null;
   let url = null;
   let youtubeDbId = null;
-  const testYoutubeId = 'A52--FKUQgU';
+  const testYoutubeId1 = 'A52--FKUQgU';
+  const testYoutubeId2 = '73dc1D8YHBg';
 
   before((done) => {
     // Create user for testing "not owner" operations
@@ -62,7 +63,7 @@ describe("API - CHANNELS (authenticated)", () => {
     const body = {
       action: 'addVideo',
       payload: {
-        youtubeId: testYoutubeId
+        youtubeId: testYoutubeId1
       }
     }
     fn.editChannel(ownerToken, url, body, (err, res) => {
@@ -73,9 +74,28 @@ describe("API - CHANNELS (authenticated)", () => {
       expect(playlist[0].video.youtubeId).to.be.equal(body.payload.youtubeId);
       youtubeDbId = playlist[0].video._id;
       done();
-    })
+    });
+  });
+  it("should let notOwner add a video to a channel", (done) => {
+    expect(url).to.exist;
+    expect(notOwnerToken).to.exist;
+    const body = {
+      action: 'addVideo',
+      payload: {
+        youtubeId: testYoutubeId2
+      }
+    }
+    fn.editChannel(notOwnerToken, url, body, (err, res) => {
+      expect(res.status).to.be.equal(200);
+      expect(res.body.playlist).to.exist;
+      const playlist = res.body.playlist;
+      expect(playlist.length).to.be.equal(2);
+      expect(playlist[1].video.youtubeId).to.be.equal(body.payload.youtubeId);
+      done();
+    });
   });
   it.skip("should let channel owner change the currently playing video");
+  it.skip("should let notOwner change the currently playing video");
   it("should return 403 when notOwner changes channel name", (done) => {
     expect(url).to.exist;
     expect(notOwnerToken).to.exist;
@@ -88,7 +108,7 @@ describe("API - CHANNELS (authenticated)", () => {
     fn.editChannel(notOwnerToken, url, body, (err, res) => {
       expect(res.status).to.be.equal(403);
       done();
-    })
+    });
   });
 
   it("should return 403 when user deletes a channel owned by another user", (done) => {

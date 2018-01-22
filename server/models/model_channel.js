@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const mongoose = require('mongoose');
 const YoutubeVideo = require('./model_youtube_video');
 const googleUtil = require('../util/util_google');
@@ -211,7 +212,13 @@ const addVideoToChannel = function (channelId, youtubeId, callback) {
                         playcount: 0,
                         video: dbVideo
                       });
-                      callback(error, channel);
+                      channel.save((error, updatedChannel) => {
+                        if (error) {
+                          error = new Error("Error updating channel");
+                          error.name = "DatabaseError";
+                        }
+                        callback(error, updatedChannel);
+                      });
                     });
                   }
                 });
@@ -226,7 +233,13 @@ const addVideoToChannel = function (channelId, youtubeId, callback) {
               playcount: 0,
               video: video
             });
-            callback(error, channel);
+            channel.save((error, updatedChannel) => {
+              if (error) {
+                error = new Error("Error updating channel");
+                error.name = "DatabaseError";
+              }
+              callback(error, updatedChannel);
+            });
           }
         });  
       }
