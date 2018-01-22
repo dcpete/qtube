@@ -2,25 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { composeWithDevTools } from 'redux-devtools-extension';
-import promise from 'redux-promise';
+import thunk from 'redux-thunk';
 
 import reducers from './reducers';
-import FrontPage from './containers/front_page';
-import ChannelPage from './containers/channel_page';
+import AppContainer from './containers/AppContainer'
 
-const createStoreWithMiddleware = composeWithDevTools(applyMiddleware(promise))(createStore);
+const createStoreWithMiddleware = composeWithDevTools(applyMiddleware(thunk))(createStore);
 
 ReactDOM.render(
   <Provider store={createStoreWithMiddleware(reducers)}>
     <BrowserRouter>
-      <div>
-        <Switch>
-          <Route path="/channels/:id" component={ChannelPage} />
-          <Route path="/" component={FrontPage} />
-        </Switch>  
-      </div>
-    </BrowserRouter>    
+      <div>  
+        <AppContainer />
+      </div>  
+    </BrowserRouter>
   </Provider>
   , document.querySelector('.container'));
