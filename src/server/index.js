@@ -19,7 +19,7 @@ const authRoutes  = require('./routes/route_auth');
 const apiRoutes   = require('./routes/route_api');
 
 // local const
-const port        = process.env.PORT || 8080;
+const port        = process.env.PORT || 3000;
 
 // connect to the database
 models.connect(dbconfig.uri);
