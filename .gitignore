@@ -1,8 +1,8 @@
-/node_modules
-/logs
+node_modules
+logs
 bundle.js
 npm-debug.log
 .DS_Store
 
 # Ignore google configuration file
-/server/config/config_google.js
+src/server/config/config_google.js
