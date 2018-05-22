@@ -1,9 +1,9 @@
 const config = require('./test_config');
-const dbconfig    = require('../server/config/config_database');
+const dbconfig    = require('../src/server/config/config_database');
 const server = require("supertest").agent(config.uri);
-const models = require('../server/models');
-const YoutubeVideo = require('../server/models/model_youtube_video');
-const googleUtil = require('../server/util/util_google');
+const models = require('../src/server/models');
+const YoutubeVideo = require('../src/server/models/model_youtube_video');
+const googleUtil = require('../src/server/util/util_google');
 
 this.createTestUser = (email, username, password, callback) => {
   return server

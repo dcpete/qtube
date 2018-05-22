@@ -1,5 +1,5 @@
 module.exports = {
-  uri : 'http://localhost:8080',
+  uri : 'http://localhost:3000',
   creds: {
     channels: {
       username: 'Test Channel',
