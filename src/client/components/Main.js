@@ -9,7 +9,7 @@ class Main extends Component {
     return (
       <main className="main-container">
         <div className="container">
-          <Route exact path='/' component={Home} /> 
+          <Route exact path='/' component={Home} />
           <Route path='/other' component={Other} />
         </div>
       </main>
