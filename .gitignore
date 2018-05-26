@@ -1,6 +1,6 @@
 node_modules
 logs
-bundle.js
+dist
 npm-debug.log
 .DS_Store
 
