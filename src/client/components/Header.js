@@ -32,22 +32,28 @@ class Header extends Component {
             <span className="navbar-toggler-icon"></span>
           </button>
           <div
-            className="collapse navbar-collapse"
+            className="collapse navbar-collapse d-md-flex"
             id="mainMenuSupportedContent"
           >
-            <ul className="navbar-nav mr-auto">
-              <li className="nav-item">
-                <Link to="/other">other</Link>
-              </li>
-              <li className="nav-item">
-                <button
-                  className="btn btn-sm btn-secondary"
-                  onClick={this.handleLogIn}
-                >
-                  Log In
-                </button>
-              </li>
-            </ul>
+            <div className="nav-main-links">
+              <ul className="navbar-nav">
+                <li className="nav-item py-1 px-2"> 
+                  <Link to="/other">other</Link>
+                </li>
+              </ul>
+            </div>
+            <div className="nav-user-links ml-auto">
+              <ul className="navbar-nav">  
+                <li className="nav-item">
+                  <button
+                    className="btn btn-sm btn-secondary"
+                    onClick={this.handleLogIn}
+                  >
+                    Log In
+                  </button>
+                </li>
+              </ul>
+            </div>  
           </div>
         </nav>
       </header>
