@@ -9,6 +9,7 @@ import thunk from 'redux-thunk';
 import reducers from './reducers';
 import AppContainer from './containers/AppContainer';
 import './static/style/style.css';
+import './static/style/bootstrap.min.css';
 
 const store = createStore(
   reducers,

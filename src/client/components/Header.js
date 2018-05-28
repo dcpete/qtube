@@ -1,5 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Navbar,
+  NavbarBrand,
+  NavbarToggler,
+  Collapse,
+  Nav,
+  NavItem,
+  Button
+} from 'reactstrap';
 
 class Header extends Component {
   constructor() {
@@ -14,49 +23,42 @@ class Header extends Component {
   }
 
   render() {
+    const {
+      collapsed,
+      toggleNavbarCollapsed,
+      handleLogIn
+    } = this.props;
     return (
-      <header className="header-container">
-        <nav className="navbar navbar-expand-md navbar-dark bg-dark">
-          <Link to="/" className="navbar-brand">
-            qtube
-          </Link>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#mainMenuSupportedContent"
-            aria-controls="mainMenuSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle main menu"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div
-            className="collapse navbar-collapse d-md-flex"
-            id="mainMenuSupportedContent"
-          >
-            <div className="nav-main-links">
-              <ul className="navbar-nav">
-                <li className="nav-item py-1 px-2"> 
-                  <Link to="/other">other</Link>
-                </li>
-              </ul>
-            </div>
-            <div className="nav-user-links ml-auto">
-              <ul className="navbar-nav">  
-                <li className="nav-item">
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    onClick={this.handleLogIn}
-                  >
-                    Log In
-                  </button>
-                </li>
-              </ul>
-            </div>  
+      <Navbar color="dark" dark expand="sm">
+        <div className="container d-flex">
+          <NavbarToggler
+            onClick={toggleNavbarCollapsed}
+            className="mr-2"
+          />  
+          <NavbarBrand className="order-1">
+            <Link to="/">
+              qtube
+            </Link>
+          </NavbarBrand>
+          <div className="ml-auto order-2 order-sm-3">
+            <Button
+              outline
+              color="warning"
+              className="mx-2"
+              onClick={handleLogIn}
+            >
+              Log In
+            </Button>
           </div>
-        </nav>
-      </header>
+          <Collapse isOpen={!collapsed} navbar className="order-3 order-sm-2">
+            <Nav navbar>
+              <NavItem className="px-2 py-2">
+                <Link to="/other">other</Link>
+              </NavItem>
+            </Nav>
+          </Collapse>
+        </div>
+      </Navbar>
     );
   }
 }
