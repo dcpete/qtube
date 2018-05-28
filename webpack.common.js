@@ -20,17 +20,33 @@ module.exports = {
       'redux-thunk',
     ]
   },
+  optimization: {
+    splitChunks: {
+      chunks: "async",
+      minSize: 30000,
+      minChunks: 1,
+      maxAsyncRequests: 5,
+      maxInitialRequests: 3,
+      automaticNameDelimiter: '~',
+      name: true,
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    },
+  },  
   plugins: [
     new clean(['dist']),
     new html({
       title: 'qtube',
       template: 'src/client/static/assets/index.html'
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor'
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'manifest'
     })
   ],
   output: {
@@ -39,25 +55,41 @@ module.exports = {
     filename: '[name].[chunkhash].js'
   },
   module: {
-    loaders: [
+    rules: [
       {
         exclude: /node_modules/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['react', 'env', 'stage-1']
-        }
+
+        use: [{
+          loader: 'babel-loader',
+
+          options: {
+            presets: ['react', 'env', 'stage-1']
+          }
+        }]
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader'
+        use: [{
+          loader: 'style-loader'
+        }, {
+          loader: 'css-loader'
+        }]
       },
       {
         test: /\.(png|svg|jpg|gif|xml|ico|webmanifest)$/,
-        loader: 'file-loader?name=[name].[ext]'
+        use: [{
+          loader: 'file-loader',
+
+          options: {
+            name: '[name].[ext]'
+          }
+        }]
       },
       {
         test: /\.html$/,
-        loader: 'html-loader'
+        use: [{
+          loader: 'html-loader'
+        }]
       }
     ]
   },
