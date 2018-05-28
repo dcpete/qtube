@@ -25,8 +25,7 @@ class Header extends Component {
   render() {
     const {
       collapsed,
-      toggleNavbarCollapsed,
-      handleLogIn
+      toggleNavbarCollapsed
     } = this.props;
     return (
       <Navbar color="dark" dark expand="sm">
@@ -35,17 +34,15 @@ class Header extends Component {
             onClick={toggleNavbarCollapsed}
             className="mr-2"
           />  
-          <NavbarBrand className="order-1">
-            <Link to="/">
-              qtube
-            </Link>
-          </NavbarBrand>
+          <Link to="/" className="navbar-brand">
+            qtube
+          </Link>
           <div className="ml-auto order-2 order-sm-3">
             <Button
               outline
               color="warning"
               className="mx-2"
-              onClick={handleLogIn}
+              onClick={this.handleLogIn}
             >
               Log In
             </Button>
