@@ -4,63 +4,38 @@ const _ = require('lodash');
 /**
  * Get a specific user
  */
-const getUserById = (req, res, next) => {
-  const userid = req.params.userid;
-  User.getByID(userid, (error, user) => {
-    if (error) {
-      return res.status(500).json({
-        message: 'Could not retrieve user'
-      });
-    }
-    if (!user) {
-      return res.status(404).json({
-        message: 'Could not find user'
-      });
-    }
+const getUserByUsername = (req, res, next) => {
+  const userid = req.params.username;
+  User.getByUsername(username).then(user => {
     res.json(user);
-  });
+  })
+  .catch(next);
 };
 
 /**
  * Update user
  */
 const editUser = (req, res, next) => {
-  User.edit(req.user._id, req.body, (error, user) => {
-    if (error) {
-      res.status(500).json({
-        message: 'Could not edit user'
-      });
-    }
-    else if (!user) {
-      res.status(404).end;
-    }
-    else {
+  User.edit(req.user.username, req.body)
+    .then(user => {
       res.json(user);
-    }
-  })
+    })
+    .catch(next);
 };
 
 /**
  * Delete a user
  */
 const deleteUser = (req, res, next) => {
-  User.delete(req.user._id, (error, user) => {
-    if (error) {
-      res.status(500).json({
-        message: 'Could not delete user'
-      });
-    }
-    else if (!user) {
-      res.status(404).end;
-    }
-    else {
+  User.delete(req.user._id)
+    .then(user => {
       res.json(user);
-    }
-  });
+    })
+    .catch(next);
 };
 
 module.exports = {
-  getById: getUserById,
-  edit: editUser,
-  delete: deleteUser
+  getUserByUsername,
+  editUser,
+  deleteUser
 };

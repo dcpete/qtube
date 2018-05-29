@@ -32,7 +32,7 @@ const YoutubeVideoSchema = mongoose.Schema({
 });
 YoutubeVideoSchema.plugin(uniqueValidator);
 
-const createVideo = function (video, callback) {
+const createVideo = function (video) {
   const newVideo = new this({
     title: video.snippet.title,
     youtubeId: video.id,
@@ -41,79 +41,25 @@ const createVideo = function (video, callback) {
     firstAdded: Date.now(),
     playcount: 0
   });
-  newVideo.save((error, addedVideo) => {
-    if (error) {
-      error = new Error("Error saving video");
-      error.name = "DatabaseError";
-    }
-    callback(error, addedVideo);
-  });
+  return newVideo.save();
 }
 
-const deleteVideo = function (id, callback) {
-  this
-  .findById(id)
-    .exec((error, video) => {
-      if (error) {
-        error = new Error("Error querying for video");
-        error.name = "DatbaseError";
-        callback(error);
-      }
-      else if (!video) {
-        error = new Error("Video not found");
-        error.name = "NotFoundError";
-        callback(error);
-      }
-      else {
-        video.remove((error, deletedVideo) => {
-          if (error) {
-            error = new Error("Error deleting video");
-            error.name = "DatabaseError";
-          }
-          callback(error, deletedVideo);
-        });
-      }
-    });
+const deleteVideo = function (id) {
+  return this
+    .findByIdAndDelete(id)
+    .exec();
 }
 
-const getVideoById = function (id, callback) {
-  this
+const getVideoById = function (id) {
+  return this
     .findById(id)
-    .exec((error, video) => {
-      if (error) {
-        error = new Error("Error querying for video");
-        error.name = "DatbaseError";
-        callback(error);
-      }
-      else if (!video) {
-        error = new Error("Video not found");
-        error.name = "NotFoundError";
-        callback(error);
-      }
-      else {
-        callback(error, video);
-      }
-    });
+    .exec();
 }
 
-const getVideoByYoutubeId = function (youtubeId, callback) {
-  this
+const getVideoByYoutubeId = function (youtubeId) {
+  return this
     .findOne({ 'youtubeId': youtubeId })
-    .exec((error, video) => {
-      if (error) {
-        error = new Error("Error querying for video");
-        error.name = "DatbaseError";
-        callback(error);
-      }
-      else if (!video) {
-        error = new Error("Video not found");
-        error.name = "NotFoundError";
-        callback(error);
-      }
-      else {
-        callback(error, video);
-      }
-    });
+    .exec();
 }
 
 YoutubeVideoSchema.statics.create = createVideo;

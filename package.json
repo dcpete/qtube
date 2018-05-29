@@ -28,6 +28,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bcrypt": "^2.0.1",
+    "bluebird": "^3.5.1",
     "body-parser": "^1.17.2",
     "es6-promise": "^4.2.4",
     "express": "^4.15.3",

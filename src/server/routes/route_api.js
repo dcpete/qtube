@@ -18,10 +18,10 @@ router.patch('/channels/:_id', validator.params(joi.mongoId), validator.body(joi
 router.delete('/channels/:_id', validator.params(joi.mongoId), channelRoutes.delete);
   
 // Get user by id
-router.get('/users/:userid', userRoutes.getById);
+router.get('/users/:userid', userRoutes.getUserByUsername);
 // Edit user  
-router.patch('/users', validator.body(joi.userEdit), userRoutes.edit);
+router.patch('/users', validator.body(joi.userEdit), userRoutes.editUser);
 // Delete user
-router.delete('/users', userRoutes.delete);
+router.delete('/users', userRoutes.deleteUser);
     
 module.exports = router;

@@ -1,28 +1,28 @@
-const google = require('googleapis');
+const {google} = require('googleapis');
 const API_KEY = require('../config/config_google').API_KEY;
 
 const getVideoById = (youtubeid, callback) => {
-  const youtube = google.youtube('v3');
-  const response = youtube.videos.list({
+  const youtube = google.youtube({
+    version: 'v3',
+    auth: API_KEY
+  });
+  youtube.videos.list({
     part: 'contentDetails,snippet',
-    id: youtubeid,
-    key: API_KEY
-  }, (error, response) => {
-    if (error) {
-      error = new Error("Error getting video from Youtube");
-      error.name = "CommunicationError";
-      callback(error);
-    }
-    else if (!response || !response.items || response.items.length === 0) {
-      error = new Error("Youtube video not found");
-      error.name = "NotFoundError";
-      callback(error);
-    }
-    else {
-      const video = response.items[0];
-      callback(error, video); 
-    }
+    id: youtubeid
   })
+    .then(response => {
+      if (!response.items || response.items.length === 0) {
+        const error = new Error("Youtube video not found");
+        error.name = "NotFoundError";
+        throw error;
+      }
+      return response.items[0];
+    })
+    .catch(err => {
+      const error = new Error("Error getting video from Youtube");
+      error.name = "CommunicationError";
+      return error;
+    });
 }
 
 const getDurationInSec = function(duration) {

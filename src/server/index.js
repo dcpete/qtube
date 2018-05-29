@@ -48,10 +48,26 @@ express.use('/api', checkToken);
 express.use('/auth', authRoutes);
 express.use('/api', apiRoutes);
 
-// Always return the main index.html, so react-router renders the route in the client
-// NOTE this goes away after development (static files will be served by nginx)
-express.get('*', (req, res) => { 
-  res.sendFile(path.resolve(__dirname, '..', 'dist', 'index.html'));
+if (express.get('env') === 'development') {
+  express.use(function (err, req, res, next) {
+    console.log(err.name);
+    console.log(err);
+    console.log(err.status);
+    res.status(err.status || 500);
+    res.json({
+      message: err.message,
+      error: err,
+    });
+  });
+}
+// production error handler
+// no stacktraces leaked to user
+express.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.json({
+      message: err.message,
+      error: {}
+    });
 });
 
 express.listen(port, () => {

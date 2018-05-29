@@ -3,14 +3,17 @@ const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt        = require('bcrypt');
 const bcryptConfig  = require('../config/config_bcrypt');
 const numSaltRounds = 8;
+const _ = require('lodash');
 
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
+    select: true,
     unique: true
   },
   email: {
     type: String,
+    select: true,
     unique: true
   },
   password: {
@@ -20,73 +23,116 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.plugin(uniqueValidator);
-
-const createUser = function (email, username, password, callback) {
-  const newUser = new this({
-    email: email,
-    username: username,
-    password: hashPassword(password)
-  });
-
-  newUser.save(callback);
-}
-
-const deleteUser = function (id, callback) {
-  this
-    .findById(id)
-    .exec((error, user) => {
-      if (error || !user) {
-        callback(new Error("Error querying for user"));
+UserSchema.post('save', (error, doc, next) => {
+  if (error.name === 'ValidationError') {
+    const dupError = new Error('Property already exists');
+    dupError.name = 'DuplicateEntryError';
+    dupError.status = 409;
+    const errs = {};
+    _.each(error.errors, (error, index) => {
+      switch (error.path) {
+        case "username":
+          errs.username = `Username has already been taken`;
+        case "email":
+          errs.email = 'This email has already been used to create an account';
       }
-      else {
-        user.remove(callback);
-      }
-  });
+    })
+    dupError.errors = errs;
+    next(dupError);
+  }
+  else {
+    next(error);
+  }
+})
+
+const createUser = function (body) {
+  const { email, username, password } = body;
+  return hashPassword(password)
+    .then(hash => {
+      const newUser = new this({
+        email: email,
+        username: username,
+        password: hash
+      });
+      return newUser.save();
+    }).catch(error => {
+      console.log(error);
+    })
 }
 
-const getUserByID = function (id, callback) {
-  this
+const deleteUser = function (id) {
+  return this
+    .findByIdAndDelete(id)
+    .exec();
+}
+
+const getUserById = function (id) {
+  return this
     .findById(id)
-    .exec(callback);
+    .exec();
 }
 
-const getUserByEmail = function (email, callback) {
-  this
-    .findOne({ 'email': email })
-    .exec(callback);
+const getUserByUsername = function (username) {
+  return this
+    .findOne({username})
+    .exec();
 }
 
-const getUserSensitiveInfo = function (email, callback) {
-  this
+const getUserByEmail = function (email) {
+  return this
     .findOne({ 'email': email })
+    .exec();
+}
+
+const getUserSensitiveInfo = function (body) {
+  return this
+    .findOne(_.pick(body,['username', 'email']))
     .select('+password')
-    .exec(callback);
+    .exec();
 }
 
-const updateUser = function (id, change, callback) {
+const logInUser = function (body) {
+  let user = undefined;
+  return this.getUserSensitiveInfo(body)
+    .then(returnedUser => {
+      user = returnedUser;
+      return comparePassword(body.password, user.password);
+    })
+    .then(salt => {
+      return user;
+    });
+}
+
+const updateUser = function (username, change) {
   if (change.password) {
     change.password = hashPassword(change.password);
   }
-  this
-    .findByIdAndUpdate(id, { $set: change }, { new: true })
-    .exec(callback);
+  return this
+    .findOneAndUpdate({ username }, { $set: change }, { new: true })
+    .exec();
 }
 
-UserSchema.statics.create = createUser;
-UserSchema.statics.getByID = getUserByID;
+UserSchema.statics.createUser = createUser;
+UserSchema.statics.getUserById = getUserById;
+UserSchema.statics.getUserByUsername = getUserByUsername;
 UserSchema.statics.getUserByEmail = getUserByEmail;
 UserSchema.statics.delete = deleteUser;
 UserSchema.statics.edit = updateUser;
 UserSchema.statics.getUserSensitiveInfo = getUserSensitiveInfo;
+UserSchema.statics.logInUser = logInUser;
 
 // Model method to check if password is correct
-UserSchema.methods.comparePassword = function comparePassword(password, callback) {
-  return bcrypt.compare(password, this.password, callback);
+const comparePassword = (password) => {
+  return bcrypt.compare(password, this.password);
 };
 
 // Model method to hash the password
 function hashPassword(password) {
-  return bcrypt.hashSync(password, bcrypt.genSaltSync(bcryptConfig.numSaltRounds));
+  return bcrypt.genSalt(bcryptConfig.numSaltRounds)
+    .then(salt => {
+      return bcrypt.hash(password, salt)
+    })
+  //return bcrypt.hashSync(password, bcrypt.genSaltSync(bcryptConfig.numSaltRounds));
 }
 
 module.exports = mongoose.model('User', UserSchema);

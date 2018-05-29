@@ -1,11 +1,11 @@
 const config = require('./test_config');
-const dbconfig    = require('../src/server/config/config_database');
+const dbconfig = require('../src/server/config/config_database');
 const server = require("supertest").agent(config.uri);
 const models = require('../src/server/models');
 const YoutubeVideo = require('../src/server/models/model_youtube_video');
 const googleUtil = require('../src/server/util/util_google');
 
-this.createTestUser = (email, username, password, callback) => {
+this.createTestUser = (email, username, password) => {
   return server
     .post('/auth/signup')
     .send({
@@ -13,93 +13,66 @@ this.createTestUser = (email, username, password, callback) => {
       'username': username,
       'password': password
     })
-    .type('form')
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
+    .type('form');
 }
 
-this.getTestUser = (id, callback) => {
-  const url = `/api/users/${id}`;
+this.getTestUser = (username) => {
+  const url = `/api/users/${usernamd}`;
   return server
-    .get(`/api/users/${id}`)
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
+    .get(`/api/users/${username}`);
 }
 
-this.deleteTestUser = (token, callback) => {
+this.deleteTestUser = (token) => {
   return server
     .delete("/api/users")
-    .set("Authorization", "Bearer " + token)
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
+    .set("Authorization", "Bearer " + token);
 }
 
-this.logInTestUser = (email, password, callback) => {
+this.logInTestUser = (email, password) => {
   return server
     .post('/auth/login')
     .send({
       'email': email,
       'password': password
     })
-    .type('form')
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
+    .type('form');
 }
 
-this.editTestUser = (token, change, callback) => {
+this.editTestUser = (token, change) => {
   return server
     .patch('/api/users')
     .set("Authorization", "Bearer " + token)
     .send(change)
-    .type('form')
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    })
+    .type('form');
 }
 
-this.createChannel = (token, title, callback) => {
+this.createChannel = (token, title) => {
   return server
     .post("/api/channels")
     .set("Authorization", "Bearer " + token)
     .send({ "name": title })
-    .type('form')
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
+    .type('form');
 }
 
-this.deleteChannel = (token, url, callback) => {
+this.deleteChannel = (token, url) => {
   return server
     .delete(url)
-    .set("Authorization", "Bearer " + token)
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
+    .set("Authorization", "Bearer " + token);
 }
 
-this.getChannels = (query, callback) => {
+this.getChannels = (query) => {
   return server
-    .get(`/api/channels?${query}`)
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    });
+    .get(`/api/channels?${query}`);
 }
 
-this.editChannel = (token, url, body, callback) => {
+this.editChannel = (token, url, body) => {
   return server
     .patch(url)
     .set("Authorization", "Bearer " + token)
-    .send(body)
-    .end((err, res) => {
-      return typeof callback === 'function' && callback(err, res);
-    })
+    .send(body);
 }
 
-this.createVideo = (youtubeid, callback) => {
+this.createVideo = (youtubeid) => {
   models.connect(dbconfig.uri);
   return googleUtil.getVideoById(youtubeid, (error, video) => {
     if (error) {
@@ -111,12 +84,12 @@ this.createVideo = (youtubeid, callback) => {
   });
 }
 
-this.deleteVideo = (id, callback) => {
+this.deleteVideo = (id) => {
   models.connect(dbconfig.uri);
   return YoutubeVideo.delete(id, callback);
 }
 
-this.getVideo = (youtubeid, callback) => {
+this.getVideo = (youtubeid) => {
   models.connect(dbconfig.uri);
   return YoutubeVideo.getByYoutubeId(youtubeid, callback);
 }

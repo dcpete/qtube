@@ -7,53 +7,53 @@ const fn = require('./test_functions');
 describe("AUTH - SIGNUP (not authenticated)", () => {
   let token = null;
   
-  it("should return an error if any of the fields are empty", (done) => {
+  it("should return an error if any of the fields are empty", () => {
     // No email
-    fn.createTestUser(null, testuser.username, testuser.password, (err, res) => {
-      expect(res.status).to.be.equal(400);
-    });
-    // No username
-    fn.createTestUser(testuser.email, null, testuser.password, (err, res) => {
-      expect(res.status).to.be.equal(400);
-    });
-    // No password
-    fn.createTestUser(testuser.email, testuser.username, null, (err, res) => {
-      expect(res.status).to.be.equal(400);
-    });
-    done();
+    return fn.createTestUser(null, testuser.username, testuser.password)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+        return fn.createTestUser(testuser.email, null, testuser.password);
+      })
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+        return fn.createTestUser(testuser.email, testuser.username, null)
+      })
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it("should return an error if email is not proper format", (done) => {
-    // No email
-    fn.createTestUser(badcreds.notemailformat, testuser.username, testuser.password, (err, res) => {
-      expect(res.status).to.be.equal(400);
-    });
-    done();
+  it("should return an error if email is not proper format", () => {
+    return fn.createTestUser(badcreds.notemailformat, testuser.username, testuser.password)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it("should return an error if password less than 8 characters", (done) => {
-    // No email
-    fn.createTestUser(testuser.email, testuser.username, badcreds.shortPassword, (err, res) => {
-      expect(res.status).to.be.equal(400);
-    });
-    done();
+  it("should return an error if password less than 8 characters", () => {
+    return fn.createTestUser(testuser.email, testuser.username, badcreds.shortPassword)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it("should allow a user to sign up", (done) => {
-    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
-      expect(res.status).to.be.equal(201);
-      expect(res.body.user._id).to.exist;
-      expect(res.body.token).to.exist;
-      token = res.body.token;
-      done();
-    });
+  it("should allow a user to sign up", () => {
+    return fn.createTestUser(testuser.email, testuser.username, testuser.password)
+      .then(res => {
+        expect(res.status).to.be.equal(201);
+        expect(res.body.token).to.exist;
+        token = res.body.token;
+      })
   });
-  it("should return 409 if email already associated with user", (done) => {
-    fn.createTestUser(testuser.email, testuser.username, testuser.password, (err, res) => {
-      expect(res.status).to.be.equal(409);
-      done();
-    });
+  it("should return 409 if email already associated with user", () => {
+    return fn.createTestUser('sweetsunday@gmail.com', testuser.username, testuser.password)
+      .then(res => {
+        expect(res.status).to.be.equal(409);
+      });
   })
 
-  after((done) => {
-    fn.deleteTestUser(token);
-    done();
+  after(() => {
+    expect(token).to.exist;
+    return fn.deleteTestUser(token)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+      })
   });
 });

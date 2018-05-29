@@ -1,5 +1,5 @@
-const User        = require('../models/model_user');
-const jwtutil     = require('../util/util_jwt');
+const User = require('../models/model_user');
+const verifyToken = require('../util/util_jwt').verifyToken;
 
 /**
  *  Check the authentication token for a valid user
@@ -9,29 +9,15 @@ const checkToken = (req, res, next) => {
   if (req.method == "GET") {
     return next();
   }
-
-  // Verify that the token is valid
-  jwtutil.verifyToken(req, (error, decodedToken) => {
-    // If error verifying token, return 401
-    if (error || !decodedToken) {
-      return res.status(401).send(error);
-    }
-    else {
-      // Check if the user exists
-      const userId = decodedToken.id;
-      User.getByID(userId, (error, user) => {
-        if (error || !user) {
-          error = new Error("Error retrieving user");
-          error.name = 'DatabaseError';
-          return res.status(500).send(error);
-        }
-        else {
-          req.user = user;
-        }
-        return next();
-      });
-    }
-  });
+  verifyToken(req)
+    .then(decodedToken => {
+      return User.getUserById(decodedToken._id);
+    })
+    .then(user => {
+      req.user = user;
+      return next();
+    })
+    .catch(next);
 };
 
 exports.checkToken = checkToken;

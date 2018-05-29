@@ -1,5 +1,8 @@
+const promisify = require('bluebird').promisify;
 const jwt = require('jsonwebtoken');
-const jwtconfig = require('../config/config_jwt');
+const jwtConfig = require('../config/config_jwt');
+const jwtSign = promisify(jwt.sign);
+const jwtVerify = promisify(jwt.verify);
 
 const getTokenOptions = (req) => {
   // Token expires in 1 day
@@ -8,7 +11,7 @@ const getTokenOptions = (req) => {
   const audience = req.ip;
   // Issuer is a way to identify this server
   // Could be spoofed, think about this
-  const issuer = jwtconfig.issuer;
+  const issuer = jwtConfig.issuer;
   // Subject is general API token
   const subject = "generalAPI"
 
@@ -23,32 +26,18 @@ const getTokenOptions = (req) => {
 /**
  * Generate an authentication token for a valid user
  */
-const signToken = (req, user, next) => {
+const signToken = (req) => {
+  const { _id } = req.user;
   const options = getTokenOptions(req);
-
-  const payload = {
-    id: user._id
-  };
-
-  // Sign and return the token
-  jwt.sign(payload, jwtconfig.secret, options, (err, token) => {
-    return next(err, token);
-  });
+  const payload = { _id };
+  return jwtSign(payload, jwtConfig.secret, options);
 }
 
-const verifyToken = (req, next) => {
-  if (!req.headers.authorization) {
-    return next(new Error());
-  }
-  // Get signed token from authentication header
+const verifyToken = (req) => {
   const authHeader = req.headers.authorization.split(' ');
   const signedToken = authHeader.length > 1 ? authHeader[1] : "";
-  
   const options = getTokenOptions(req);
-
-  jwt.verify(signedToken, jwtconfig.secret, options, (error, decodedToken) => {
-    return next(error, decodedToken);
-  });
+  return jwtVerify(signedToken, jwtConfig.secret, options);
 }
 
 exports.signToken = signToken;
