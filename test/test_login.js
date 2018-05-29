@@ -22,7 +22,7 @@ describe("AUTH - LOGIN (not authenticated)", () => {
         expect(res.body.username).to.be.equal(testuser.username);
       })
   });
-  /*
+
   it("should return 400 for an email in a bad format", () => {
     return fn.logInTestUser(badcreds.notemailformat, testuser.password)
       .then(res => {
@@ -36,7 +36,7 @@ describe("AUTH - LOGIN (not authenticated)", () => {
         expect(res.status).to.be.equal(400);
       });
   });
-
+/*
   it("should return 401 for an unknown email", () => {
     return fn.logInTestUser(badcreds.unknownEmail, testuser.password)
       .then(res => {

@@ -45,7 +45,7 @@ router.post('/login', validator.body(joi.userLogin), (req, res, next) => {
       }
       res.json(payload);
     })
-    .catch(next());
+    .catch(next);
 });
 
 module.exports = router;
