@@ -38,7 +38,7 @@ UserSchema.post('save', (error, doc, next) => {
       }
     })
     dupError.errors = errs;
-    next(dupError);
+    throw dupError;
   }
   else {
     next(error);
@@ -55,8 +55,6 @@ const createUser = function (body) {
         password: hash
       });
       return newUser.save();
-    }).catch(error => {
-      console.log(error);
     })
 }
 
@@ -122,8 +120,8 @@ UserSchema.statics.getUserSensitiveInfo = getUserSensitiveInfo;
 UserSchema.statics.logInUser = logInUser;
 
 // Model method to check if password is correct
-const comparePassword = (password) => {
-  return bcrypt.compare(password, this.password);
+const comparePassword = (plaintextPassword, hashedPassword) => {
+  return bcrypt.compare(plaintextPassword, hashedPassword);
 };
 
 // Model method to hash the password

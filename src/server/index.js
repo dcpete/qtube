@@ -50,9 +50,6 @@ express.use('/api', apiRoutes);
 
 if (express.get('env') === 'development') {
   express.use(function (err, req, res, next) {
-    console.log(err.name);
-    console.log(err);
-    console.log(err.status);
     res.status(err.status || 500);
     res.json({
       message: err.message,
@@ -60,15 +57,17 @@ if (express.get('env') === 'development') {
     });
   });
 }
-// production error handler
-// no stacktraces leaked to user
-express.use(function (err, req, res, next) {
-  res.status(err.status || 500);
-  res.json({
-      message: err.message,
-      error: {}
-    });
-});
+else {
+  // production error handler
+  // no stacktraces leaked to user
+  express.use(function (err, req, res, next) {
+    res.status(err.status || 500);
+    res.json({
+        message: err.message,
+        error: {}
+      });
+  });
+}
 
 express.listen(port, () => {
     console.log(`Express listening on port ${port}!`);

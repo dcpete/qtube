@@ -7,7 +7,7 @@ const fn = require('./test_functions');
 describe("AUTH - SIGNUP (not authenticated)", () => {
   let token = null;
   
-  it("should return an error if any of the fields are empty", () => {
+  it("should return 400 if any of the fields are empty", () => {
     // No email
     return fn.createTestUser(null, testuser.username, testuser.password)
       .then(res => {
@@ -22,13 +22,13 @@ describe("AUTH - SIGNUP (not authenticated)", () => {
         expect(res.status).to.be.equal(400);
       });
   });
-  it("should return an error if email is not proper format", () => {
+  it("should return 400 if email is not proper format", () => {
     return fn.createTestUser(badcreds.notemailformat, testuser.username, testuser.password)
       .then(res => {
         expect(res.status).to.be.equal(400);
       });
   });
-  it("should return an error if password less than 8 characters", () => {
+  it("should return 400 if password less than 8 characters", () => {
     return fn.createTestUser(testuser.email, testuser.username, badcreds.shortPassword)
       .then(res => {
         expect(res.status).to.be.equal(400);
