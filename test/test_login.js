@@ -36,7 +36,6 @@ describe("AUTH - LOGIN (not authenticated)", () => {
         expect(res.status).to.be.equal(400);
       });
   });
-/*
   it("should return 401 for an unknown email", () => {
     return fn.logInTestUser(badcreds.unknownEmail, testuser.password)
       .then(res => {
@@ -50,7 +49,7 @@ describe("AUTH - LOGIN (not authenticated)", () => {
         expect(res.status).to.be.equal(401);
       });
   });
-*/
+
   after(() => {
     expect(token).to.exist;
     return fn.deleteTestUser(token)

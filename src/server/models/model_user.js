@@ -86,7 +86,15 @@ const getUserSensitiveInfo = function (body) {
   return this
     .findOne(_.pick(body,['username', 'email']))
     .select('+password')
-    .exec();
+    .exec()
+    .then(user => {
+      if (!user) {
+        const error = new Error("User not found");
+        error.status = 401;
+        throw error;
+      }
+      return user;
+    });
 }
 
 const logInUser = function (body) {
@@ -96,7 +104,12 @@ const logInUser = function (body) {
       user = returnedUser;
       return comparePassword(body.password, user.password);
     })
-    .then(salt => {
+    .then(isCorrectPassword => {
+      if (!isCorrectPassword) {
+        const error = new Error("Incorrect password");
+        error.status = 401;
+        throw error;
+      }
       return user;
     });
 }
