@@ -1,73 +1,34 @@
-/*
 const expect = require("chai").expect;
 
 const testUser = require('./test_config').creds.users;
 const badUser = require('./test_config').creds.bad;
 const fn = require("./test_functions");
 
-describe("USERS (not authenticated)", () => {
-  let id = null;
+describe("USERS (/api/users)", () => {
   let token = null;
 
-  before((done) => {
-    fn.createTestUser(testUser.email, testUser.username, testUser.password)
-      .then(res => {
-        expect(res.body.token).to.exist;
-        expect(res.body.user).to.exist;
-        expect(res.body.user._id).to.exist;
-        token = res.body.token;
-        id = res.body.user._id;
-        done();
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  });
-
-  it.skip("should return public info about a given user", (done) => {
-    fn.getTestUser(id, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body._id).to.exist;
-      expect(res.body._id).to.equal(id);
-      expect(res.body.username).to.exist;
-      expect(res.body.username).to.equal(testUser.username);
-      expect(res.body.password).to.not.exist;
-      done();
+  before(() => {
+    return fn.createTestUser({
+      email: testUser.email,
+      username: testUser.username,
+      password: testUser.password
     })
-  });
-
-  after((done) => {
-    fn.deleteTestUser(token)
-      .then(res => {
-        expect(res.status).to.be.equal(200);
-        done();
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  })
-});
-
-describe("API - USER MANAGEMENT (authenticated)", () => {
-  let id = null;
-  let token = null;
-
-// Even though it's not tested until later, we should create and delete users with every test.
-// There shouldn't be any carryover, and tests should be able to run independently (even though
-// functions might be needed).  
-
-  before((done) => {
-    fn.createTestUser(testUser.email, testUser.username, testUser.password)
       .then(res => {
         expect(res.body.token).to.exist;
-        expect(res.body.user).to.exist;
-        expect(res.body.user._id).to.exist;
-        id = res.body.user._id;
         token = res.body.token;
-        done();
-      })
-      .catch(err => {
-        console.log(err);
+      });
+  });
+
+  it("should return public info about a given user", () => {
+    return fn.getTestUser(testUser.username)
+      .then(res => {
+        console.log(res.error);
+        expect(res.status).to.be.equal(200);
+        expect(res.body.username).to.exist;
+        expect(res.body.username).to.equal(testUser.username);
+        expect(res.body.email).to.exist;
+        expect(res.body.email).to.equal(testUser.email);
+        expect(res.body.password).to.not.exist;
       });
   });
 
@@ -217,15 +178,11 @@ describe("API - USER MANAGEMENT (authenticated)", () => {
   });
   // Note, this should always be the last test in this describe
   // since we're not deleting the user with an after()
-  it("should let a user delete itself", (done) => {
-    fn.deleteTestUser(token)
+  it("should let a user delete itself", () => {
+    expect(token).to.exist;
+    return fn.deleteTestUser(token)
       .then(res => {
         expect(res.status).to.be.equal(200);
-        done();
-      })
-      .catch(err => {
-        console.log(err);
       });
   });
 });
-*/

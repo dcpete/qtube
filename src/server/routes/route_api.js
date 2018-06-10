@@ -17,8 +17,8 @@ router.patch('/channels/:_id', validator.params(joi.mongoId), validator.body(joi
 // Delete channel  
 router.delete('/channels/:_id', validator.params(joi.mongoId), channelRoutes.delete);
   
-// Get user by id
-router.get('/users/:userid', userRoutes.getUserByUsername);
+// Get user by username
+router.get('/users/:username', userRoutes.getUserByUsername);
 // Edit user  
 router.patch('/users', validator.body(joi.userEdit), userRoutes.editUser);
 // Delete user

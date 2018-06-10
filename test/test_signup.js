@@ -4,9 +4,11 @@ const testuser = require('./test_config').creds.signup;
 const badcreds = require('./test_config').creds.bad;
 const fn = require('./test_functions');
 
-describe("AUTH - SIGNUP (not authenticated)", () => {
+describe("AUTHENTICATION - SIGNUP (/auth/signup)", () => {
   let token = null;
   
+  //TODO DO NOT LET USERNAMES HAVE SPACES
+
   it("should return 400 if any of the fields are empty", () => {
     // No email
     return fn.createTestUser({

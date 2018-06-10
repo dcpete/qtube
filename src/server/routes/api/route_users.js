@@ -5,11 +5,11 @@ const _ = require('lodash');
  * Get a specific user
  */
 const getUserByUsername = (req, res, next) => {
-  const userid = req.params.username;
-  User.getByUsername(username).then(user => {
-    res.json(user);
-  })
-  .catch(next);
+  User.getUserByUsername(req.params.username)
+    .then(user => {
+      res.json(user);
+    })
+    .catch(next);
 };
 
 /**

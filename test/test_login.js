@@ -4,7 +4,7 @@ const testuser = require('./test_config').creds.login;
 const badcreds = require('./test_config').creds.bad;
 const fn = require('./test_functions');
 
-describe("AUTH - LOGIN (not authenticated)", () => {
+describe("AUTHENTICATION - LOGIN (/auth/login)", () => {
   let token = null;
   
   before(() => {

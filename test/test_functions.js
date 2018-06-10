@@ -13,7 +13,6 @@ this.createTestUser = (credentials) => {
 }
 
 this.getTestUser = (username) => {
-  const url = `/api/users/${usernamd}`;
   return server
     .get(`/api/users/${username}`);
 }
