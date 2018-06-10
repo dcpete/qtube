@@ -9,7 +9,11 @@ describe("AUTH - LOGIN (not authenticated)", () => {
   
   before(() => {
     // Create the user to test login
-    return fn.createTestUser(testuser.email, testuser.username, testuser.password)
+    return fn.createTestUser({
+      email: testuser.email,
+      username: testuser.username,
+      password: testuser.password
+    })
       .then(res => {
         token = res.body.token;
       });

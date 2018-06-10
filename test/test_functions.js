@@ -5,14 +5,10 @@ const models = require('../src/server/models');
 const YoutubeVideo = require('../src/server/models/model_youtube_video');
 const googleUtil = require('../src/server/util/util_google');
 
-this.createTestUser = (email, username, password) => {
+this.createTestUser = (credentials) => {
   return server
     .post('/auth/signup')
-    .send({
-      'email': email,
-      'username': username,
-      'password': password
-    })
+    .send(credentials)
     .type('form');
 }
 
