@@ -28,13 +28,10 @@ this.deleteTestUser = (token) => {
     .set("Authorization", "Bearer " + token);
 }
 
-this.logInTestUser = (email, password) => {
+this.logInTestUser = (credentials) => {
   return server
     .post('/auth/login')
-    .send({
-      'email': email,
-      'password': password
-    })
+    .send(credentials)
     .type('form');
 }
 
