@@ -13,9 +13,10 @@ const joiUserSignup = joi.object({
 })
 
 const joiUserLogin = joi.object({
-  email: joi.string().email().required(),
+  email: joi.string().email(),
+  username: joi.string().max(16),
   password: joi.string().min(8).required()
-});
+}).xor('username', 'email');
 
 const joiUserEdit = joi.object({
   username: joi.string().min(1).max(16),
