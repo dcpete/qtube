@@ -1,25 +1,24 @@
 const joi = require('joi');
 
 const joiUser = joi.object({
-  username: joi.string().min(1).max(16),
-  password: joi.string().min(8),
-  _id: joi.string().hex().length(24).required()
+  username: joi.string().min(1).max(16).regex(/^[A-Za-z0-9_]+$/),
+  password: joi.string().min(8)
 });
 
 const joiUserSignup = joi.object({
-  username: joi.string().min(1).max(16).required(),
+  username: joi.string().min(1).max(16).regex(/^[A-Za-z0-9_]+$/).required(),
   email: joi.string().min(1).email().required(),
   password: joi.string().min(8).required()
 })
 
 const joiUserLogin = joi.object({
   email: joi.string().email(),
-  username: joi.string().max(16),
+  username: joi.string().max(16).regex(/^[A-Za-z0-9_]+$/),
   password: joi.string().min(8).required()
 }).xor('username', 'email');
 
 const joiUserEdit = joi.object({
-  username: joi.string().min(1).max(16),
+  username: joi.string().min(1).max(16).regex(/^[A-Za-z0-9_]+$/),
   password: joi.string().min(8),
   email: joi.string().min(1).email()
 });

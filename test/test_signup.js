@@ -6,8 +6,6 @@ const fn = require('./test_functions');
 
 describe("AUTHENTICATION - SIGNUP (/auth/signup)", () => {
   let token = null;
-  
-  //TODO DO NOT LET USERNAMES HAVE SPACES
 
   it("should return 400 if any of the fields are empty", () => {
     // No email
@@ -36,6 +34,26 @@ describe("AUTHENTICATION - SIGNUP (/auth/signup)", () => {
         expect(res.status).to.be.equal(400);
       });
   });
+  it("should return 400 if the username contains a space", () => {
+    return fn.createTestUser({
+      email: testuser.email,
+      username: 'user name',
+      password: testuser.password
+    })
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+    })
+  })
+  it("should return 400 if the username contains a special character", () => {
+    return fn.createTestUser({
+      email: testuser.email,
+      username: 'u$ername',
+      password: testuser.password
+    })
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+    })
+  })
   it("should return 400 if email is not proper format", () => {
     return fn.createTestUser({
       email: badcreds.notemailformat,
