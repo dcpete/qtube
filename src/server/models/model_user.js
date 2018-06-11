@@ -116,10 +116,23 @@ const logInUser = function (body) {
 
 const updateUser = function (username, change) {
   if (change.password) {
-    change.password = hashPassword(change.password);
+    return hashPassword(change.password)
+      .then(hashedPassword => {
+        return this
+          .findOneAndUpdate(
+            { username },
+            { $set: {password: hashedPassword} },
+            { new: true }
+          )
+          .exec();
+      });
   }
   return this
-    .findOneAndUpdate({ username }, { $set: change }, { new: true })
+    .findOneAndUpdate(
+      { username },
+      { $set: change },
+      { new: true }
+    )
     .exec();
 }
 

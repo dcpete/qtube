@@ -32,38 +32,51 @@ describe("USERS (/api/users)", () => {
       });
   });
 
-  it.skip("should let a user change their username", (done) => {
+  it("should let a user change their username", () => {
     const change = {
       username: testUser.update.username
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body).to.exist;
-      expect(res.body.username).to.be.equal(change.username);
-      // Change the username back to the original
-      fn.editTestUser(token, { username: testUser.username }, (err, res) => {
+    return fn.editTestUser(token, change)
+      .then(res => {
         expect(res.status).to.be.equal(200);
-        done();
+        expect(res.body).to.exist;
+        expect(res.body.username).to.be.equal(change.username);
+      })
+      .then(() => {
+        // Change the username back to the original
+        return fn.editTestUser(token, { username: testUser.username })
+      })
+      .then(res => {
+        expect(res.status).to.be.equal(200);
       });
-    });
   });
-  it.skip("should let a user change their password", (done) => {
+  it("should let a user change their password", () => {
     const change = {
       password: testUser.update.password
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body).to.exist;
-      // Test that the new password works for login
-      fn.logInTestUser(testUser.email, change.password, (err, res) => {
+    return fn.editTestUser(token, change)
+      .then(res => {
+        console.log(res.error);
         expect(res.status).to.be.equal(200);
-        // Change the password back to the original
-        fn.editTestUser(token, { password: testUser.password }, (err, res) => {
-          expect(res.status).to.be.equal(200);
-          done();
+        expect(res.body).to.exist;
+      })
+      .then(() => {
+        // Test that the new password works for login
+        return fn.logInTestUser({
+          email: testUser.email,
+          password: change.password
         })
+      })
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+      })
+      .then(() => {
+        // Change the password back to the original
+        return fn.editTestUser(token, { password: testUser.password })
+      })
+      .then(res => {
+        expect(res.status).to.be.equal(200);
       });
-    });
   });
   it.skip("should let a user change their email", (done) => {
     const change = {
