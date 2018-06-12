@@ -24,17 +24,11 @@ const channelCallback = (res, error, channel) => {
 
 // Create a channel
 const createChannel = (req, res, next) => {
-  Channel.create(req.body.name, req.user, (error, channel) => {
-    if (error) {
-      res.status(500).json({
-        message: 'Could not create channel'
-      });
-    }
-    else {
+  Channel.create(req.body.name, req.user)
+    .then(channel => {
       const loc = `/api/channels/${channel._id}`;
       res.location(loc).status(201).json(channel);
-    }
-  });
+    });
 };
 
 // Get a specific channel by _id
@@ -91,9 +85,10 @@ const editChannel = (req, res, next) => {
 
 // Delete a specific channel
 const deleteChannel = (req, res, next) => {
-  Channel.delete(req.params._id, req.user, (error, channel) => {
-    channelCallback(res, error, channel);
-  });
+  Channel.delete(req.params._id, req.user)
+    .then(channel => {
+      res.json(channel);
+    });
 };
 
 module.exports = {

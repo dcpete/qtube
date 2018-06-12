@@ -1,35 +1,66 @@
-/*const expect = require("chai").expect;
+const expect = require("chai").expect;
 
 const testuser = require('./test_config').creds.channels;
 const otheruser = require('./test_config').creds.login;
 const fn = require('./test_functions');
 
-describe("API - CHANNELS (authenticated)", () => {
+describe("CHANNELS (/api/channels)", () => {
   let ownerToken = null;
   let notOwnerToken = null;
   let url = null;
   let youtubeDbId = null;
   const testYoutubeId1 = 'A52--FKUQgU';
   const testYoutubeId2 = '73dc1D8YHBg';
+  var token = null;
+  var testChannel1 = null;
+  var testChannel2 = null;
+  var testChannel3 = null;
 
-  before((done) => {
+  before(() => {
     // Create user for testing "not owner" operations
-    fn.createTestUser(otheruser.email, otheruser.username, otheruser.password)
+    return fn.createTestUser({
+      email: otheruser.email,
+      username: otheruser.username,
+      password: otheruser.password
+    })
       .then(res => {
         expect(res.status).to.be.equal(201);
         expect(res.body.token).to.exist;
         notOwnerToken = res.body.token;
-        return fn.createTestUser(testuser.email, testuser.username, testuser.password);
+        return fn.createTestUser({
+          email: testuser.email,
+          username: testuser.username,
+          password: testuser.password
+        });
       })
       .then(res => {
-        expect(err).to.not.exist;
         expect(res.status).to.be.equal(201);
         expect(res.body.token).to.exist;
         ownerToken = res.body.token;
-        done();
+        return fn.createChannel(ownerToken, "test channel 1");
       })
-      .catch(err => {
-        console.log(err);
+      .then(res => {
+        expect(res.status).to.be.equal(201);
+        expect(res.headers.location).to.exist;
+        expect(res.body).to.exist;
+        testChannel1 = res.body;
+        testChannel1.url = res.headers.location;
+        return fn.createChannel(ownerToken, "test channel 2");
+      })  
+      .then(res => {
+        expect(res.status).to.be.equal(201);
+        expect(res.headers.location).to.exist;
+        expect(res.body).to.exist;
+        testChannel2 = res.body;
+        testChannel2.url = res.headers.location;
+        return fn.createChannel(ownerToken, "test channel 3")
+      })  
+      .then(res => {
+        expect(res.status).to.be.equal(201);
+        expect(res.headers.location).to.exist;
+        expect(res.body).to.exist;
+        testChannel3 = res.body;
+        testChannel3.url = res.headers.location;
       });
   });
 
@@ -135,63 +166,6 @@ describe("API - CHANNELS (authenticated)", () => {
     });
   });
 
-  after((done) => {
-    fn.deleteTestUser(notOwnerToken, (err, res) => {
-      expect(err).to.not.exist;
-      expect(res.status).to.be.equal(200);
-    });
-    fn.deleteTestUser(ownerToken, (err, res) => {
-      expect(err).to.not.exist;
-      expect(res.status).to.be.equal(200);
-      done();
-    });
-  });
-});
-
-describe("API - CHANNELS (not authenticated)", () => {
-  var token = null;
-  var testChannel1 = null;
-  var testChannel2 = null;
-  var testChannel3 = null;
-
-  before((done) => {
-    fn.createTestUser(testuser.email, testuser.username, testuser.password)
-      .then((user) => {
-        expect(res.body.token).to.exist;
-        expect(res.body.user).to.exist;
-        testUserToken = res.body.token;
-        testUser = res.body.user;
-        return fn.createChannel(testUserToken, "test channel 1");
-      })
-      .then(res => {
-        expect(res.status).to.be.equal(201);
-        expect(res.headers.location).to.exist;
-        expect(res.body).to.exist;
-        testChannel1 = res.body;
-        testChannel1.url = res.headers.location;
-        return fn.createChannel(testUserToken, "test channel 2");
-      })  
-      .then(res => {
-        expect(res.status).to.be.equal(201);
-        expect(res.headers.location).to.exist;
-        expect(res.body).to.exist;
-        testChannel2 = res.body;
-        testChannel2.url = res.headers.location;
-        return fn.createChannel(testUserToken, "test channel 3")
-      })  
-      .then(res => {
-        expect(res.status).to.be.equal(201);
-        expect(res.headers.location).to.exist;
-        expect(res.body).to.exist;
-        testChannel3 = res.body;
-        testChannel3.url = res.headers.location;
-        done;
-      })
-      .catch(err => {
-        console.log(err);
-      })
-  });
-
   it.skip("should return 400 if search with no query", (done) => {
     fn.getChannels('', (err, res) => {
       expect(res.status).to.be.equal(400);
@@ -232,20 +206,23 @@ describe("API - CHANNELS (not authenticated)", () => {
     });
   });
 
-  after((done) => {
-    fn.deleteChannel(testUserToken, testChannel1.url)
-      .then(() => {
-        return fn.deleteChannel(testUserToken, testChannel2.url);
+  after(() => {
+    return fn.deleteChannel(ownerToken, testChannel1.url)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        return fn.deleteChannel(ownerToken, testChannel2.url);
       })
-      .then(() => {
-        return fn.deleteChannel(testUserToken, testChannel3.url);
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        return fn.deleteChannel(ownerToken, testChannel3.url);
       })
-      .then(() => {
-        return fn.deleteTestUser(testUserToken);
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        return fn.deleteTestUser(ownerToken);
       })
-      .then(() => {
-        done();
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        return fn.deleteTestUser(notOwnerToken);
       });
   });
 });
-*/

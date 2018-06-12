@@ -80,14 +80,13 @@ const getChannelByID = function (id) {
  * @param {string} id 
  * @param {function} callback 
  */
-const deleteChannel = function (id, user, callback) {
+const deleteChannel = function (id) {
   return this
-    .findById(id)
-    .populate('owner')
+    .findByIdAndDelete(id)
     .exec();
 }
 
-const searchChannel = function (params, callback) {
+const searchChannel = function (params) {
   // Make each parameter a regex so exact match not required
   Object.keys(params).forEach((key) => {
     params[key] = { $regex: params[key], $options: 'i' };
