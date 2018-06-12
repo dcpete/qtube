@@ -21,7 +21,7 @@ const joiUserEdit = joi.object({
   username: joi.string().min(1).max(16).regex(/^[A-Za-z0-9_]+$/),
   password: joi.string().min(8),
   email: joi.string().min(1).email()
-});
+}).or('username', 'password', 'email');
 
 const joiYoutubeVideo = joi.object({
   id: joi.string().length(11).required()

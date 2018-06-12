@@ -22,7 +22,6 @@ describe("USERS (/api/users)", () => {
   it("should return public info about a given user", () => {
     return fn.getTestUser(testUser.username)
       .then(res => {
-        console.log(res.error);
         expect(res.status).to.be.equal(200);
         expect(res.body.username).to.exist;
         expect(res.body.username).to.equal(testUser.username);
@@ -41,8 +40,6 @@ describe("USERS (/api/users)", () => {
         expect(res.status).to.be.equal(200);
         expect(res.body).to.exist;
         expect(res.body.username).to.be.equal(change.username);
-      })
-      .then(() => {
         // Change the username back to the original
         return fn.editTestUser(token, { username: testUser.username })
       })
@@ -56,21 +53,16 @@ describe("USERS (/api/users)", () => {
     }
     return fn.editTestUser(token, change)
       .then(res => {
-        console.log(res.error);
         expect(res.status).to.be.equal(200);
         expect(res.body).to.exist;
-      })
-      .then(() => {
         // Test that the new password works for login
         return fn.logInTestUser({
           email: testUser.email,
           password: change.password
-        })
+        });
       })
       .then(res => {
         expect(res.status).to.be.equal(200);
-      })
-      .then(() => {
         // Change the password back to the original
         return fn.editTestUser(token, { password: testUser.password })
       })
@@ -78,116 +70,127 @@ describe("USERS (/api/users)", () => {
         expect(res.status).to.be.equal(200);
       });
   });
-  it.skip("should let a user change their email", (done) => {
+  it("should let a user change their email", () => {
     const change = {
       email: testUser.update.email
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body).to.exist;
-      expect(res.body.email).to.be.equal(change.email);
-      // Test that the new email works for login
-      fn.logInTestUser(change.email, testUser.password, (err, res) => {
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        expect(res.body).to.exist;
+        expect(res.body.email).to.be.equal(change.email);
+        // Test that the new email works for login
+        return fn.logInTestUser({
+          email: change.email,
+          password: testUser.password
+        });
+      })
+      .then(res => {
         expect(res.status).to.be.equal(200);
         // Change the email back to the original
-        fn.editTestUser(token, { email: testUser.email }, (err, res) => {
-          expect(res.status).to.be.equal(200);
-          done();
-        });
+        return fn.editTestUser(token, { email: testUser.email });
+      })
+      .then(res => {
+        expect(res.status).to.be.equal(200);
       });
-    });
   });
-  it.skip("should let a user change their email and password", (done) => {
+  it("should let a user change their email and password", () => {
     const change = {
       email: testUser.update.email,
       password: testUser.update.password
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body).to.exist;
-      expect(res.body.email).to.be.equal(change.email);
-      fn.logInTestUser(change.email, change.password, (err, res) => {
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        expect(res.body).to.exist;
+        expect(res.body.email).to.be.equal(change.email);
+        // Test that the new email and password work
+        return fn.logInTestUser({
+          email: change.email, password: change.password
+        });
+      })
+      .then(res => {
         expect(res.status).to.be.equal(200);
         // Change password and email back to the original
-        fn.editTestUser(token, { email: testUser.email, password: testUser.password }, (err, res) => {
-          expect(res.status).to.be.equal(200);
-          done();
+        return fn.editTestUser(token, {
+          email: testUser.email,
+          password: testUser.password
         });
+      })
+      .then(res => {
+          expect(res.status).to.be.equal(200);
       });
-    });
   });
-  it.skip("should return 200 if empty object is sent", (done) => {
+  it("should return 400 if empty object is sent", () => {
     const change = {}
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body.email).to.be.equal(testUser.email);
-      expect(res.body.username).to.be.equal(testUser.username);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it.skip("should return 400 if an unknown parameter is specified", (done) => {
+  it("should return 400 if an unknown parameter is specified", () => {
     const change = {
       unknownParam: 'something'
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it.skip("should return 400 if the password is too short", (done) => {
+  it("should return 400 if the password is too short", () => {
     const change = {
       password: badUser.shortPassword
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it.skip("should return 400 if the email is in a bad format", (done) => {
+  it("should return 400 if the email is in a bad format", () => {
     const change = {
       email: badUser.notemailformat
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it.skip("should return 400 if email field is empty", (done) => {
+  it("should return 400 if email field is empty", () => {
     change = {
       email: ''
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it.skip("should return 400 if password field is empty", (done) => {
+  it("should return 400 if password field is empty", () => {
     change = {
       password: ''
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it.skip("should return 400 if email field is empty", (done) => {
+  it("should return 400 if email field is empty", () => {
     change = {
       email: ''
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
-  it.skip("should return 400 if password empty and username valid", (done) => {
+  it("should return 400 if password empty and username valid", () => {
     change = {
       email: testUser.update.email,
       password: ''
     }
-    fn.editTestUser(token, change, (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+    return fn.editTestUser(token, change)
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
   // Note, this should always be the last test in this describe
   // since we're not deleting the user with an after()

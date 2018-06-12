@@ -118,10 +118,11 @@ const updateUser = function (username, change) {
   if (change.password) {
     return hashPassword(change.password)
       .then(hashedPassword => {
+        const newChange = Object.assign(change, { password: hashedPassword });
         return this
           .findOneAndUpdate(
             { username },
-            { $set: {password: hashedPassword} },
+            { $set: newChange },
             { new: true }
           )
           .exec();
