@@ -96,11 +96,28 @@ const searchChannel = function (params) {
     .exec()
 }
 
-const editChannel = function (channelID, user, action, payload, callback) {
+const editChannel = function (channelId, user, change) {
   return this
-    .findById(channelID)
+    .findOne({ _id: channelId })
     .populate('owner')
-    .exec();
+    .exec()
+    .then(channel => {
+      console.log('change: ' + change)
+      if (channel.owner._id.equals(user._id)) {
+        return this
+          .findOneAndUpdate(
+            { _id: channelId },
+            { $set: change },
+            { new: true }
+          )
+          .exec();
+      }
+      else {
+        const error = new Error("Not authorized to edit channel");
+        error.status = 403;
+        throw error;
+      }
+    })
 }
 
 /*

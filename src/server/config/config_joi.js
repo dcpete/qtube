@@ -44,13 +44,14 @@ const joiChannel = joi.object({
   playing: joi.boolean()
 });
 
+const joiChannelCreate = joi.object({
+  name: joi.string().min(1).max(50).required()
+})
+
 const joiChannelEdit = joi.object({
-  action: joi.string().required(),
-  payload: joi.object({
-    name: joi.string(),
-    youtubeId: joi.string().length(11)
-  })
-});
+  name: joi.string().min(1).max(50),
+  owner: joi.string().min(1).max(16)
+}).or('name', 'owner');
 
 const joiMongoId = joi.object().keys({
   _id: joi.string().length(24).hex()
@@ -64,6 +65,7 @@ module.exports = {
   youtubeVideo: joiYoutubeVideo,
   playlist: joiPlaylist,
   channel: joiChannel,
+  channelCreate: joiChannelCreate,
   channeEdit: joiChannelEdit,
   mongoId: joiMongoId
 }

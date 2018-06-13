@@ -28,7 +28,8 @@ const createChannel = (req, res, next) => {
     .then(channel => {
       const loc = `/api/channels/${channel._id}`;
       res.location(loc).status(201).json(channel);
-    });
+    })
+    .catch(next);
 };
 
 // Get a specific channel by _id
@@ -54,33 +55,11 @@ const getChannelBySearchTerm = (req, res, next) => {
 
 // Edit a specific channel
 const editChannel = (req, res, next) => {
-  if (_.isEmpty(req.body.action) || _.isEmpty(req.body.payload)) {
-    res.status(400).json({
-      message: 'Request sent with nothing to update'
-    });
-  }
-  else {
-    const channelId = req.params._id;
-    const user = req.user;
-    const action = req.body.action;
-    const payload = req.body.payload;
-    switch (action) {
-      case 'changeName':
-        Channel.edit(channelId, user, action, payload, (error, channel) => {
-          channelCallback(res, error, channel);
-        });
-        break;
-      case 'addVideo':
-        Channel.addVideo(channelId, payload.youtubeId, (error, channel) => {
-          channelCallback(res, error, channel);
-        })
-        break;
-      default:
-        res.status(400).json({
-          message: 'Bad request action'
-        });
-    }
-  }
+  Channel.edit(req.params._id, req.user, req.body)
+    .then(channel => {
+      res.json(channel);
+    })
+    .catch(next);
 };
 
 // Delete a specific channel
@@ -88,7 +67,8 @@ const deleteChannel = (req, res, next) => {
   Channel.delete(req.params._id, req.user)
     .then(channel => {
       res.json(channel);
-    });
+    })
+    .catch(next);
 };
 
 module.exports = {

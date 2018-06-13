@@ -114,14 +114,14 @@ const logInUser = function (body) {
     });
 }
 
-const updateUser = function (username, change) {
+const updateUser = function (userId, change) {
   if (change.password) {
     return hashPassword(change.password)
       .then(hashedPassword => {
         const newChange = Object.assign(change, { password: hashedPassword });
         return this
           .findOneAndUpdate(
-            { username },
+            { _id: userId },
             { $set: newChange },
             { new: true }
           )
@@ -130,7 +130,7 @@ const updateUser = function (username, change) {
   }
   return this
     .findOneAndUpdate(
-      { username },
+      { _id: userId },
       { $set: change },
       { new: true }
     )

@@ -73,20 +73,17 @@ describe("CHANNELS (/api/channels)", () => {
       });
   });
   
-  it.skip("should let channel owner change the channel name", (done) => {
+  it("should let channel owner change the channel name", () => {
     expect(testChannelUrl).to.exist;
     expect(ownerToken).to.exist;
     const body = {
-      action: 'changeName',
-      payload: {
-        name: 'changed name'
-      }
+      name: 'changed name'
     }
-    fn.editChannel(ownerToken, testChannelUrl, body, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body.name).to.be.equal(body.payload.name);
-      done();
-    })
+    return fn.editChannel(ownerToken, testChannelUrl, body)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        expect(res.body.name).to.be.equal(body.name);
+      })
   });
 
   it.skip("should let channel owner add videos to the channel", (done) => {
