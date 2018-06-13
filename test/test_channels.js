@@ -7,7 +7,7 @@ const fn = require('./test_functions');
 describe("CHANNELS (/api/channels)", () => {
   let ownerToken = null;
   let notOwnerToken = null;
-  let url = null;
+  let testChannelUrl = null;
   let youtubeDbId = null;
   const testYoutubeId1 = 'A52--FKUQgU';
   const testYoutubeId2 = '73dc1D8YHBg';
@@ -64,22 +64,17 @@ describe("CHANNELS (/api/channels)", () => {
       });
   });
 
-  it.skip("should be able to create a channel if authenticated", (done) => {
+  it("should be able to create a channel if authenticated", () => {
     expect(ownerToken).to.exist;
-    fn.createChannel(ownerToken, "test channel")
-      .then(response => {
+    return fn.createChannel(ownerToken, "test channel")
+      .then(res => {
         expect(res.status).to.be.equal(201);
-        url = res.headers.location;
-        done();
-      })
-      .catch(err => {
-        console.log(err);
-        done();
+        testChannelUrl = res.headers.location;
       });
   });
   
   it.skip("should let channel owner change the channel name", (done) => {
-    expect(url).to.exist;
+    expect(testChannelUrl).to.exist;
     expect(ownerToken).to.exist;
     const body = {
       action: 'changeName',
@@ -87,7 +82,7 @@ describe("CHANNELS (/api/channels)", () => {
         name: 'changed name'
       }
     }
-    fn.editChannel(ownerToken, url, body, (err, res) => {
+    fn.editChannel(ownerToken, testChannelUrl, body, (err, res) => {
       expect(res.status).to.be.equal(200);
       expect(res.body.name).to.be.equal(body.payload.name);
       done();
@@ -95,7 +90,7 @@ describe("CHANNELS (/api/channels)", () => {
   });
 
   it.skip("should let channel owner add videos to the channel", (done) => {
-    expect(url).to.exist;
+    expect(testChannelUrl).to.exist;
     expect(ownerToken).to.exist;
     const body = {
       action: 'addVideo',
@@ -103,7 +98,7 @@ describe("CHANNELS (/api/channels)", () => {
         youtubeId: testYoutubeId1
       }
     }
-    fn.editChannel(ownerToken, url, body, (err, res) => {
+    fn.editChannel(ownerToken, testChannelUrl, body, (err, res) => {
       expect(res.status).to.be.equal(200);
       expect(res.body.playlist).to.exist;
       const playlist = res.body.playlist;
@@ -114,7 +109,7 @@ describe("CHANNELS (/api/channels)", () => {
     });
   });
   it.skip("should let notOwner add a video to a channel", (done) => {
-    expect(url).to.exist;
+    expect(testChannelUrl).to.exist;
     expect(notOwnerToken).to.exist;
     const body = {
       action: 'addVideo',
@@ -122,7 +117,7 @@ describe("CHANNELS (/api/channels)", () => {
         youtubeId: testYoutubeId2
       }
     }
-    fn.editChannel(notOwnerToken, url, body, (err, res) => {
+    fn.editChannel(notOwnerToken, testChannelUrl, body, (err, res) => {
       expect(res.status).to.be.equal(200);
       expect(res.body.playlist).to.exist;
       const playlist = res.body.playlist;
@@ -134,7 +129,7 @@ describe("CHANNELS (/api/channels)", () => {
   it.skip("should let channel owner change the currently playing video");
   it.skip("should let notOwner change the currently playing video");
   it.skip("should return 403 when notOwner changes channel name", (done) => {
-    expect(url).to.exist;
+    expect(testChannelUrl).to.exist;
     expect(notOwnerToken).to.exist;
     const body = {
       action: 'changeName',
@@ -142,28 +137,28 @@ describe("CHANNELS (/api/channels)", () => {
         name: 'changed name'
       }
     }
-    fn.editChannel(notOwnerToken, url, body, (err, res) => {
+    fn.editChannel(notOwnerToken, testChannelUrl, body, (err, res) => {
       expect(res.status).to.be.equal(403);
       done();
     });
   });
 
   it.skip("should return 403 when user deletes a channel owned by another user", (done) => {
-    expect(url).to.exist;
+    expect(testChannelUrl).to.exist;
     expect(notOwnerToken).to.exist;
-    fn.deleteChannel(notOwnerToken, url, (err, res) => {
+    fn.deleteChannel(notOwnerToken, testChannelUrl, (err, res) => {
       expect(res.status).to.be.equal(403);
       done();
     });
   });
 
-  it.skip("should be able to delete a channel if owner", (done) => {
-    expect(url).to.exist;
+  it("should let a channel owner delete said channel", () => {
+    expect(testChannelUrl).to.exist;
     expect(ownerToken).to.exist;
-    fn.deleteChannel(ownerToken, url, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      done();
-    });
+    return fn.deleteChannel(ownerToken, testChannelUrl)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+      });
   });
 
   it.skip("should return 400 if search with no query", (done) => {
