@@ -176,44 +176,54 @@ describe("CHANNELS (/api/channels)", () => {
       });
   });
 
-  it.skip("should return 400 if search with no query", (done) => {
-    fn.getChannels('', (err, res) => {
-      expect(res.status).to.be.equal(400);
-      done();
-    });
+  it("should return 400 if search with no query", () => {
+    return fn.getChannels('')
+      .then(res => {
+        expect(res.status).to.be.equal(400);
+      });
   });
   
-  it.skip("should find a channel from a query", (done) => {
+  it("should find a channel from a query", () => {
     const query = "name=test+channel+1";
-    fn.getChannels(query, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body.length).to.be.equal(1);
-      expect(res.body[0].name).to.be.equal("test channel 1");
-      done();
-    });
+    return fn.getChannels(query)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        expect(res.body.length).to.be.equal(1);
+        expect(res.body[0].name).to.be.equal("test channel 1");
+      });
   });
 
-  it.skip("should find multiple channels from a query", (done) => {
+  it("should find multiple channels from a query", () => {
     const query = "name=test+channel";
-    fn.getChannels(query, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body.length).to.be.equal(3);
-      done();
-    });
+    return fn.getChannels(query)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        expect(res.body.length).to.be.equal(3);
+      });
   });
 
-  it.skip("should return 401 for unauthenticated channel create", (done) => {
-    fn.createChannel(null, "test channel", (err, res) => {
-      expect(res.status).to.be.equal(401);
-      done();
-    });
+  it("should return 401 for unauthenticated channel create", () => {
+    return fn.createChannel(null, "test channel")
+      .then(res => {
+        expect(res.status).to.be.equal(401);
+      });
+  });
+
+  it("should return 401 for unauthenticated channel edit", () => {
+    const body = {
+      name: 'notOwner changed name'
+    }
+    return fn.editChannel(null, testChannel1.url, body)
+      .then(res => {
+        expect(res.status).to.be.equal(401);
+      });
   });
   
-  it.skip("should return 401 for unauthenticated channel delete", (done) => {
-    fn.deleteChannel(null, testChannel1.url, (err, res) => {
-      expect(res.status).to.be.equal(401);
-      done();
-    });
+  it("should return 401 for unauthenticated channel delete", () => {
+    return fn.deleteChannel(null, testChannel1.url)
+      .then(res => {
+        expect(res.status).to.be.equal(401);
+      });
   });
 
   after(() => {

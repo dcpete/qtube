@@ -1,27 +1,6 @@
 const Channel = require('../../models/model_channel');
 const _ = require('lodash');
 
-const channelCallback = (res, error, channel) => {
-  if (error) {
-    switch (error.name) {
-      case "UnauthorizedError":
-        res.status(403).send(error);
-        break;
-      case "NotFoundError":
-        res.status(404).end();
-        break;
-      case "DatabaseError":
-        res.status(500).send(error);
-        break;
-      default:
-        res.status(500).end();
-    }
-  }
-  else {
-    res.json(channel);
-  }
-}
-
 // Create a channel
 const createChannel = (req, res, next) => {
   Channel.create(req.body.name, req.user)
@@ -41,16 +20,11 @@ const getChannelById = (req, res, next) => {
 
 // Get a list of channels by search term
 const getChannelBySearchTerm = (req, res, next) => {
-  if (!req.query || _.isEmpty(req.query)) {
-    res.status(400).json({
-      message: 'Request must supply a query'
-    });
-  }
-  else {
-    Channel.search(req.query, (error, channels) => {
-      channelCallback(res, error, channels);
-    });
-  }
+  Channel.search(req.query)
+    .then(channels => {
+      res.json(channels);
+    })
+    .catch(next);
 };
 
 // Edit a specific channel
