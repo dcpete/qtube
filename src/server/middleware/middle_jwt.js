@@ -17,7 +17,10 @@ const checkToken = (req, res, next) => {
       req.user = user;
       return next();
     })
-    .catch(next);
+    .catch(err => {
+      err.status = 401;
+      return next(err);
+    });
 };
 
 exports.checkToken = checkToken;
