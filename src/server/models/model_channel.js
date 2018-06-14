@@ -80,10 +80,28 @@ const getChannelByID = function (id) {
  * @param {string} id 
  * @param {function} callback 
  */
-const deleteChannel = function (id) {
+const deleteChannel = function (channelId, user) {
   return this
-    .findByIdAndDelete(id)
-    .exec();
+    .findOne({ _id: channelId })
+    .populate('owner')
+    .exec()
+    .then(channel => {
+      if (!channel) {
+        const error = new Error("Channel not found");
+        error.status = 404;
+        throw error;
+      }
+      else if (channel.owner._id.equals(user._id)) {
+        return this
+          .findByIdAndDelete(channelId)
+          .exec();
+      }
+      else {
+        const error = new Error("Not authorized to edit channel");
+        error.status = 403;
+        throw error;
+      }
+    });
 }
 
 const searchChannel = function (params) {
@@ -102,8 +120,12 @@ const editChannel = function (channelId, user, change) {
     .populate('owner')
     .exec()
     .then(channel => {
-      console.log('change: ' + change)
-      if (channel.owner._id.equals(user._id)) {
+      if (!channel) {
+        const error = new Error("Channel not found");
+        error.status = 404;
+        throw error;
+      }
+      else if (channel.owner._id.equals(user._id)) {
         return this
           .findOneAndUpdate(
             { _id: channelId },
@@ -117,7 +139,7 @@ const editChannel = function (channelId, user, change) {
         error.status = 403;
         throw error;
       }
-    })
+    });
 }
 
 /*

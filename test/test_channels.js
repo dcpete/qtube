@@ -77,13 +77,13 @@ describe("CHANNELS (/api/channels)", () => {
     expect(testChannelUrl).to.exist;
     expect(ownerToken).to.exist;
     const body = {
-      name: 'changed name'
+      name: 'owner changed name'
     }
     return fn.editChannel(ownerToken, testChannelUrl, body)
       .then(res => {
         expect(res.status).to.be.equal(200);
         expect(res.body.name).to.be.equal(body.name);
-      })
+      });
   });
 
   it.skip("should let channel owner add videos to the channel", (done) => {
@@ -125,36 +125,54 @@ describe("CHANNELS (/api/channels)", () => {
   });
   it.skip("should let channel owner change the currently playing video");
   it.skip("should let notOwner change the currently playing video");
-  it.skip("should return 403 when notOwner changes channel name", (done) => {
+  it("should return 403 when notOwner changes channel name", () => {
     expect(testChannelUrl).to.exist;
     expect(notOwnerToken).to.exist;
     const body = {
-      action: 'changeName',
-      payload: {
-        name: 'changed name'
-      }
+      name: 'notOwner changed name'
     }
-    fn.editChannel(notOwnerToken, testChannelUrl, body, (err, res) => {
+    return fn.editChannel(notOwnerToken, testChannelUrl, body)
+      .then(res => {
       expect(res.status).to.be.equal(403);
-      done();
     });
   });
 
-  it.skip("should return 403 when user deletes a channel owned by another user", (done) => {
+  it("should return 403 when user deletes a channel owned by another user", () => {
     expect(testChannelUrl).to.exist;
     expect(notOwnerToken).to.exist;
-    fn.deleteChannel(notOwnerToken, testChannelUrl, (err, res) => {
+    return fn.deleteChannel(notOwnerToken, testChannelUrl)
+      .then(res => {
       expect(res.status).to.be.equal(403);
-      done();
     });
   });
 
-  it("should let a channel owner delete said channel", () => {
+  it("should let a channel owner delete their own channel", () => {
     expect(testChannelUrl).to.exist;
     expect(ownerToken).to.exist;
     return fn.deleteChannel(ownerToken, testChannelUrl)
       .then(res => {
         expect(res.status).to.be.equal(200);
+      });
+  });
+
+  it("should return 404 for edit if no channel found", () => {
+    expect(testChannelUrl).to.exist;
+    expect(ownerToken).to.exist;
+    const body = {
+      name: 'owner changed name'
+    }
+    return fn.editChannel(ownerToken, testChannelUrl, body)
+      .then(res => {
+        expect(res.status).to.be.equal(404);
+      });
+  });
+
+  it("should return 404 for delete if no channel found", () => {
+    expect(testChannelUrl).to.exist;
+    expect(ownerToken).to.exist;
+    return fn.deleteChannel(ownerToken, testChannelUrl)
+      .then(res => {
+        expect(res.status).to.be.equal(404);
       });
   });
 
@@ -215,6 +233,9 @@ describe("CHANNELS (/api/channels)", () => {
       .then(res => {
         expect(res.status).to.be.equal(200);
         return fn.deleteTestUser(notOwnerToken);
+      })
+      .then(res => {
+        expect(res.status).to.be.equal(200);
       });
   });
 });
