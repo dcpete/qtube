@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
 const YoutubeVideo = require('./model_youtube_video');
-const googleUtil = require('../util/util_google');
 
 const ChannelSchema = mongoose.Schema({
   created: {
