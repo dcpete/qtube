@@ -8,7 +8,7 @@ const youtube = google.youtube({
   auth: API_KEY
 });
 
-const YoutubeVideoSchema = mongoose.Schema({
+const YoutubeVideoSchema = new mongoose.Schema({
   title: {
     type: String,
     required: 'YoutubeVideo must have title'
@@ -46,6 +46,14 @@ YoutubeVideoSchema.post('save', (error, doc, next) => {
   }
   else {
     next(error);
+  }
+})
+YoutubeVideoSchema.post('save', (doc) => {
+})
+YoutubeVideoSchema.set('toJSON', {
+  versionKey: false,
+  transform: function(doc, ret) {
+    delete ret._id;
   }
 })
 

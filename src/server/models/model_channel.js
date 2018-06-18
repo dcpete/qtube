@@ -1,8 +1,9 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
 const YoutubeVideo = require('./model_youtube_video');
+const shajs = require('sha.js');
 
-const ChannelSchema = mongoose.Schema({
+const schema = mongoose.Schema({
   created: {
     type: Date,
     default: Date.now
@@ -28,6 +29,10 @@ const ChannelSchema = mongoose.Schema({
       video: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'YoutubeVideo'
+      },
+      vid: {
+        type: String,
+        default: ''
       }
     }
   ],
@@ -43,8 +48,25 @@ const ChannelSchema = mongoose.Schema({
   playing: {
     type: Boolean,
     default: false
+  },
+  cid: {
+    type: String,
+    default: ''
   }
 });
+schema.post('save', (doc) => {
+  if (!doc.cid) {
+    doc.cid = shajs('sha256')
+      .update(doc._id.toString())
+      .digest('hex')
+      .substring(0, 24);
+  }
+})
+schema.set('toJSON', {
+  transform: (doc, ret, options) => {
+    delete ret._id;
+  }
+})
 
 /**
  * Create a new channel
@@ -141,87 +163,58 @@ const editChannel = function (channelId, user, change) {
     });
 }
 
-/*
-const addVideoToChannel = function (channelId, youtubeId, callback) {
-  this.findById(channelId)
+
+const addVideoToChannel = function (channelId, body) {
+  let targetChannel = undefined;
+  // body should have { addVideo: <youtubeId> }
+  const youtubeId = body.addVideo;
+  return this.findById(channelId)
     .populate({
       path: 'playlist',
       populate: {
         path: 'video'
       }
     })
-    .exec((error, channel) => {
-      if (error) {
-        error = new Error("Error querying for channel");
-        error.name = "DatabaseError";
-        callback(error);
-      }
-      else if (!channel) {
-        error = new Error("Channel not found");
+    .exec()
+    .then(channel => {
+      if (!channel) {
+        const error = new Error("Channel not found");
         error.name = "NotFoundError";
-        callback(error);
+        throw error;
       }
       else {
-        YoutubeVideo.getByYoutubeId(youtubeId, (error, video) => {
-          if (error) {
-            switch (error.name) {
-              case "NotFoundError":
-                googleUtil.getVideoById(youtubeId, (error, videoFromYT) => {
-                  if (error) {
-                    callback(error);
-                  }
-                  else if (!videoFromYT || _.isEmpty(videoFromYT)) {
-                    error = new Error("Error getting video from youtube");
-                    error.name = "NotFoundError";
-                    callback(error);
-                  }
-                  else {
-                    YoutubeVideo.create(videoFromYT, (error, dbVideo) => {
-                      channel.playlist.push({
-                        added: Date.now(),
-                        playcount: 0,
-                        video: dbVideo
-                      });
-                      channel.save((error, updatedChannel) => {
-                        if (error) {
-                          error = new Error("Error updating channel");
-                          error.name = "DatabaseError";
-                        }
-                        callback(error, updatedChannel);
-                      });
-                    });
-                  }
-                });
-                break;
-              default:
-                callback(error);
-            }
-          }
-          else {
-            channel.playlist.push({
-              added: Date.now(),
-              playcount: 0,
-              video: video
-            });
-            channel.save((error, updatedChannel) => {
-              if (error) {
-                error = new Error("Error updating channel");
-                error.name = "DatabaseError";
-              }
-              callback(error, updatedChannel);
-            });
-          }
-        });  
+        targetChannel = channel;
+        return YoutubeVideo.getByYoutubeId(youtubeId);
       }
+    })
+    .then(video => {
+      if (!video) {
+        return YoutubeVideo.create(youtubeId);
+      }
+      else {
+        return video;
+      }
+    })
+    .then(video => {
+      targetChannel.playlist.push({
+        added: Date.now(),
+        playcount: 0,
+        video: video,
+        vid: shajs('sha256')
+          .update(mongoose.Types.ObjectId().toString())
+          .digest('hex')
+          .substring(0, 24)
+      });
+      return targetChannel.save();
     });
 }
-*/
 
-ChannelSchema.statics.create = createChannel;
-ChannelSchema.statics.getByID = getChannelByID;
-ChannelSchema.statics.delete = deleteChannel;
-ChannelSchema.statics.search = searchChannel;
-ChannelSchema.statics.edit = editChannel;
-//ChannelSchema.statics.addVideo = addVideoToChannel;
 
-module.exports = mongoose.model('Channel', ChannelSchema);
+schema.statics.create = createChannel;
+schema.statics.getByID = getChannelByID;
+schema.statics.delete = deleteChannel;
+schema.statics.search = searchChannel;
+schema.statics.edit = editChannel;
+schema.statics.addVideo = addVideoToChannel;
+
+module.exports = mongoose.model('Channel', schema);

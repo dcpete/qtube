@@ -1,4 +1,5 @@
 const expect = require("chai").expect;
+const shajs = require('sha.js');
 
 const testuser = require('./test_config').creds.channels;
 const otheruser = require('./test_config').creds.login;
@@ -86,43 +87,39 @@ describe("CHANNELS (/api/channels)", () => {
       });
   });
 
-  it.skip("should let channel owner add videos to the channel", (done) => {
+  it("should let channel owner add videos to the channel", () => {
     expect(testChannelUrl).to.exist;
     expect(ownerToken).to.exist;
     const body = {
-      action: 'addVideo',
-      payload: {
-        youtubeId: testYoutubeId1
-      }
+      addVideo: testYoutubeId1
     }
-    fn.editChannel(ownerToken, testChannelUrl, body, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body.playlist).to.exist;
-      const playlist = res.body.playlist;
-      expect(playlist.length).to.be.equal(1);
-      expect(playlist[0].video.youtubeId).to.be.equal(body.payload.youtubeId);
-      youtubeDbId = playlist[0].video._id;
-      done();
-    });
+    return fn.addVideoToChannel(ownerToken, testChannelUrl, body)
+      .then(res => {
+        expect(res.status).to.be.equal(200);
+        expect(res.body.playlist).to.exist;
+        const playlist = res.body.playlist;
+        expect(playlist.length).to.be.equal(1);
+        expect(playlist[0].video.youtubeId).to.be.equal(body.addVideo);
+      });
   });
-  it.skip("should let notOwner add a video to a channel", (done) => {
+
+  it("should let notOwner add a video to a channel", () => {
     expect(testChannelUrl).to.exist;
     expect(notOwnerToken).to.exist;
     const body = {
-      action: 'addVideo',
-      payload: {
-        youtubeId: testYoutubeId2
-      }
+      addVideo: testYoutubeId2
     }
-    fn.editChannel(notOwnerToken, testChannelUrl, body, (err, res) => {
-      expect(res.status).to.be.equal(200);
-      expect(res.body.playlist).to.exist;
-      const playlist = res.body.playlist;
-      expect(playlist.length).to.be.equal(2);
-      expect(playlist[1].video.youtubeId).to.be.equal(body.payload.youtubeId);
-      done();
-    });
+    return fn.addVideoToChannel(ownerToken, testChannelUrl, body)
+      .then(res => {
+        res.body && console.log(res.body);
+        expect(res.status).to.be.equal(200);
+        expect(res.body.playlist).to.exist;
+        const playlist = res.body.playlist;
+        expect(playlist.length).to.be.equal(2);
+        expect(playlist[1].video.youtubeId).to.be.equal(body.addVideo);
+      });
   });
+
   it.skip("should let channel owner change the currently playing video");
   it.skip("should let notOwner change the currently playing video");
   it("should return 403 when notOwner changes channel name", () => {

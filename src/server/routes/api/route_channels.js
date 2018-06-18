@@ -27,6 +27,15 @@ const getChannelBySearchTerm = (req, res, next) => {
     .catch(next);
 };
 
+// Add a video to a channel
+const addVideoToChannel = (req, res, next) => {
+  Channel.addVideo(req.params._id, req.body)
+    .then(channel => {
+      res.json(channel);
+    })
+    .catch(next);
+};
+
 // Edit a specific channel
 const editChannel = (req, res, next) => {
   Channel.edit(req.params._id, req.user, req.body)
@@ -49,6 +58,7 @@ module.exports = {
   create: createChannel,
   getById: getChannelById,
   getBySearchTerm: getChannelBySearchTerm,
+  addVideo: addVideoToChannel,
   edit: editChannel,
   delete: deleteChannel
 };

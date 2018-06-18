@@ -61,6 +61,13 @@ this.editChannel = (token, url, body) => {
     .send(body);
 }
 
+this.addVideoToChannel = (token, url, body) => {
+  return server
+    .post(url)
+    .set("Authorization", "Bearer " + token)
+    .send(body);
+}
+
 this.createVideo = (youtubeid) => {
   return YoutubeVideo.create(youtubeid);
 }
