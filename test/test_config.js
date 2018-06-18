@@ -2,9 +2,16 @@ module.exports = {
   uri : 'http://localhost:3000',
   creds: {
     channels: {
-      username: 'Test_Channel',
-      password: 'this is my test channels password',
-      email: 'testchannel@test.org'
+      owner: {
+        username: 'Test_Channel_Owner',
+        password: 'this is my test channels password',
+        email: 'testChannelOwner@test.org',
+      },
+      notOwner: {
+        username: 'Test_Channel_Not_Owner',
+        password: 'this is my test channels password',
+        email: 'testchannelNotOwner@test.org'
+      }
     },
     login: {
       username: 'Test_Login',

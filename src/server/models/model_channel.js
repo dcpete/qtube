@@ -30,7 +30,7 @@ const schema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'YoutubeVideo'
       },
-      vid: {
+      pid: {
         type: String,
         default: ''
       }
@@ -51,7 +51,8 @@ const schema = mongoose.Schema({
   },
   cid: {
     type: String,
-    default: ''
+    default: '',
+    unique: true
   }
 });
 schema.post('save', (doc) => {
@@ -60,10 +61,14 @@ schema.post('save', (doc) => {
       .update(doc._id.toString())
       .digest('hex')
       .substring(0, 24);
+    doc
+      .update({ 'cid': doc.cid })
+      .exec();
   }
 })
 schema.set('toJSON', {
-  transform: (doc, ret, options) => {
+  versionKey: false,
+  transform: (doc, ret) => {
     delete ret._id;
   }
 })
@@ -83,13 +88,13 @@ const createChannel = function (name, owner) {
 }
 
 /**
- * Get a specific channel by its _id
+ * Get a specific channel by its cid
  * @param {string} id 
  * @returns {Promise} 
  */
-const getChannelByID = function (id) {
+const getChannelByID = function (cid) {
   return this
-    .findById(id)
+    .finOne({ cid: cid })
     .populate('owner')
     .populate('playlist')
     .populate('currentVideo')
@@ -97,13 +102,13 @@ const getChannelByID = function (id) {
 }
 
 /**
- * Delete a channel by its _id
+ * Delete a channel by its cid
  * @param {string} id 
  * @param {function} callback 
  */
-const deleteChannel = function (channelId, user) {
+const deleteChannel = function (cid, user) {
   return this
-    .findOne({ _id: channelId })
+    .findOne({ cid: cid })
     .populate('owner')
     .exec()
     .then(channel => {
@@ -112,9 +117,9 @@ const deleteChannel = function (channelId, user) {
         error.status = 404;
         throw error;
       }
-      else if (channel.owner._id.equals(user._id)) {
+      else if (channel.owner.uid === user.uid) {
         return this
-          .findByIdAndDelete(channelId)
+          .findOneAndDelete({ cid: cid })
           .exec();
       }
       else {
@@ -135,9 +140,9 @@ const searchChannel = function (params) {
     .exec()
 }
 
-const editChannel = function (channelId, user, change) {
+const editChannel = function (cid, user, change) {
   return this
-    .findOne({ _id: channelId })
+    .findOne({ cid: cid })
     .populate('owner')
     .exec()
     .then(channel => {
@@ -146,10 +151,10 @@ const editChannel = function (channelId, user, change) {
         error.status = 404;
         throw error;
       }
-      else if (channel.owner._id.equals(user._id)) {
+      else if (channel.owner.uid === user.uid) {
         return this
           .findOneAndUpdate(
-            { _id: channelId },
+            { cid: cid },
             { $set: change },
             { new: true }
           )
@@ -164,11 +169,11 @@ const editChannel = function (channelId, user, change) {
 }
 
 
-const addVideoToChannel = function (channelId, body) {
+const addVideoToChannel = function (cid, body) {
   let targetChannel = undefined;
   // body should have { addVideo: <youtubeId> }
   const youtubeId = body.addVideo;
-  return this.findById(channelId)
+  return this.findOne({ cid: cid })
     .populate({
       path: 'playlist',
       populate: {

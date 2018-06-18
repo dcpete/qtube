@@ -22,21 +22,21 @@ router.post(
 
 // Get channel by id
 router.get(
-  '/channels/:_id',
+  '/channels/:cid',
   validator.params(joi.mongoId),
   channelRoutes.getById
 );
 
 // Post something to a channel
 router.post(
-  '/channels/:_id',
+  '/channels/:cid',
   validator.params(joi.mongoId),
   channelRoutes.addVideo
 );
 
 // Edit specific channel
 router.patch(
-  '/channels/:_id',
+  '/channels/:cid',
   validator.params(joi.mongoId),
   validator.body(joi.channeEdit),
   channelRoutes.edit
@@ -44,7 +44,7 @@ router.patch(
 
 // Delete channel
 router.delete(
-  '/channels/:_id',
+  '/channels/:cid',
   validator.params(joi.mongoId),
   channelRoutes.delete
 );

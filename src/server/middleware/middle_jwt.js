@@ -11,7 +11,7 @@ const checkToken = (req, res, next) => {
   }
   verifyToken(req)
     .then(decodedToken => {
-      return User.getUserById(decodedToken._id);
+      return User.getUserById(decodedToken.uid);
     })
     .then(user => {
       req.user = user;

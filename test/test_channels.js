@@ -1,8 +1,8 @@
 const expect = require("chai").expect;
 const shajs = require('sha.js');
 
-const testuser = require('./test_config').creds.channels;
-const otheruser = require('./test_config').creds.login;
+const testuser = require('./test_config').creds.channels.owner;
+const otheruser = require('./test_config').creds.channels.notOwner;
 const fn = require('./test_functions');
 
 describe("CHANNELS (/api/channels)", () => {
@@ -47,15 +47,16 @@ describe("CHANNELS (/api/channels)", () => {
         testChannel1 = res.body;
         testChannel1.url = res.headers.location;
         return fn.createChannel(ownerToken, "test channel 2");
-      })  
+      })
       .then(res => {
+        console.log(res.error)
         expect(res.status).to.be.equal(201);
         expect(res.headers.location).to.exist;
         expect(res.body).to.exist;
         testChannel2 = res.body;
         testChannel2.url = res.headers.location;
         return fn.createChannel(ownerToken, "test channel 3")
-      })  
+      })
       .then(res => {
         expect(res.status).to.be.equal(201);
         expect(res.headers.location).to.exist;
@@ -82,6 +83,7 @@ describe("CHANNELS (/api/channels)", () => {
     }
     return fn.editChannel(ownerToken, testChannelUrl, body)
       .then(res => {
+        console.log(res.error)
         expect(res.status).to.be.equal(200);
         expect(res.body.name).to.be.equal(body.name);
       });
@@ -111,7 +113,6 @@ describe("CHANNELS (/api/channels)", () => {
     }
     return fn.addVideoToChannel(ownerToken, testChannelUrl, body)
       .then(res => {
-        res.body && console.log(res.body);
         expect(res.status).to.be.equal(200);
         expect(res.body.playlist).to.exist;
         const playlist = res.body.playlist;

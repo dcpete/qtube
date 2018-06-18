@@ -27,9 +27,9 @@ const getTokenOptions = (req) => {
  * Generate an authentication token for a valid user
  */
 const signToken = (req) => {
-  const { _id } = req.user;
+  const { uid } = req.user;
   const options = getTokenOptions(req);
-  const payload = { _id };
+  const payload = { uid };
   return jwtSign(payload, jwtConfig.secret, options);
 }
 

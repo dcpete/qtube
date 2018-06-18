@@ -4,8 +4,9 @@ const bcrypt        = require('bcrypt');
 const bcryptConfig  = require('../config/config_bcrypt');
 const numSaltRounds = 8;
 const _ = require('lodash');
+const shajs = require('sha.js');
 
-const UserSchema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   username: {
     type: String,
     select: true,
@@ -19,11 +20,16 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     select: false
+  },
+  uid: {
+    type: String,
+    select: true,
+    unique: true
   }
 });
 
-UserSchema.plugin(uniqueValidator);
-UserSchema.post('save', (error, doc, next) => {
+schema.plugin(uniqueValidator);
+schema.post('save', (error, doc, next) => {
   if (error.name === 'ValidationError') {
     const dupError = new Error('Property already exists');
     dupError.name = 'DuplicateEntryError';
@@ -44,6 +50,24 @@ UserSchema.post('save', (error, doc, next) => {
     next(error);
   }
 })
+schema.post('save', (doc) => {
+  if (!doc.uid) {
+    doc.uid = shajs('sha256')
+      .update(doc._id.toString())
+      .digest('hex')
+      .substring(0, 24);
+    doc
+      .update({ 'uid': doc.uid })
+      .exec();
+  }
+})
+schema.set('toJSON', {
+  versionKey: false,
+  transform: (doc, ret) => {
+    ret.password && delete ret.password;
+    delete ret._id;
+  }
+})
 
 const createUser = function (body) {
   const { email, username, password } = body;
@@ -58,15 +82,15 @@ const createUser = function (body) {
     })
 }
 
-const deleteUser = function (id) {
+const deleteUser = function (uid) {
   return this
-    .findByIdAndDelete(id)
+    .findOneAndDelete({ uid: uid })
     .exec();
 }
 
-const getUserById = function (id) {
+const getUserById = function (uid) {
   return this
-    .findById(id)
+    .findOne({ 'uid': uid })
     .exec();
 }
 
@@ -84,7 +108,7 @@ const getUserByEmail = function (email) {
 
 const getUserSensitiveInfo = function (body) {
   return this
-    .findOne(_.pick(body,['username', 'email']))
+    .findOne(_.pick(body,['username', 'email', 'uid']))
     .select('+password')
     .exec()
     .then(user => {
@@ -121,7 +145,7 @@ const updateUser = function (userId, change) {
         const newChange = Object.assign(change, { password: hashedPassword });
         return this
           .findOneAndUpdate(
-            { _id: userId },
+            { uid: userId },
             { $set: newChange },
             { new: true }
           )
@@ -130,21 +154,21 @@ const updateUser = function (userId, change) {
   }
   return this
     .findOneAndUpdate(
-      { _id: userId },
+      { uid: userId },
       { $set: change },
       { new: true }
     )
     .exec();
 }
 
-UserSchema.statics.createUser = createUser;
-UserSchema.statics.getUserById = getUserById;
-UserSchema.statics.getUserByUsername = getUserByUsername;
-UserSchema.statics.getUserByEmail = getUserByEmail;
-UserSchema.statics.delete = deleteUser;
-UserSchema.statics.edit = updateUser;
-UserSchema.statics.getUserSensitiveInfo = getUserSensitiveInfo;
-UserSchema.statics.logInUser = logInUser;
+schema.statics.createUser = createUser;
+schema.statics.getUserById = getUserById;
+schema.statics.getUserByUsername = getUserByUsername;
+schema.statics.getUserByEmail = getUserByEmail;
+schema.statics.delete = deleteUser;
+schema.statics.edit = updateUser;
+schema.statics.getUserSensitiveInfo = getUserSensitiveInfo;
+schema.statics.logInUser = logInUser;
 
 // Model method to check if password is correct
 const comparePassword = (plaintextPassword, hashedPassword) => {
@@ -157,7 +181,6 @@ function hashPassword(password) {
     .then(salt => {
       return bcrypt.hash(password, salt)
     })
-  //return bcrypt.hashSync(password, bcrypt.genSaltSync(bcryptConfig.numSaltRounds));
 }
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', schema);

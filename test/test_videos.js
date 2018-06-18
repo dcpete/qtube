@@ -42,7 +42,7 @@ describe("VIDEOS (no direct api call)", () => {
       });
   });
   it("should be able to delete a video", () => {
-    return fn.deleteVideo(testvideo._id)
+    return fn.deleteVideo(testYoutubeVideoId)
       .then(video => {
         expect(video.youtubeId).to.equal(testYoutubeVideoId);
       });

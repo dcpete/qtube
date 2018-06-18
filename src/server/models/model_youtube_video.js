@@ -2,13 +2,14 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const { google } = require('googleapis');
 const API_KEY = require('../config/config_google').API_KEY;
+const shajs = require('sha.js');
 
 const youtube = google.youtube({
   version: 'v3',
   auth: API_KEY
 });
 
-const YoutubeVideoSchema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   title: {
     type: String,
     required: 'YoutubeVideo must have title'
@@ -34,10 +35,15 @@ const YoutubeVideoSchema = new mongoose.Schema({
   playcount: {
     type: Number,
     default: 0 
+  },
+  vid: {
+    type: String,
+    default: '',
+    unique: true
   }
 });
-YoutubeVideoSchema.plugin(uniqueValidator);
-YoutubeVideoSchema.post('save', (error, doc, next) => {
+schema.plugin(uniqueValidator);
+schema.post('save', (error, doc, next) => {
   if (error.name === 'ValidationError') {
     const dupError = new Error('YoutubeVideo already exists');
     dupError.name = 'DuplicateEntryError';
@@ -47,10 +53,19 @@ YoutubeVideoSchema.post('save', (error, doc, next) => {
   else {
     next(error);
   }
-})
-YoutubeVideoSchema.post('save', (doc) => {
-})
-YoutubeVideoSchema.set('toJSON', {
+});
+schema.post('save', (doc) => {
+  if (!doc.vid) {
+    doc.vid = shajs('sha256')
+      .update(doc._id.toString())
+      .digest('hex')
+      .substring(0, 24);
+    doc
+      .update({ 'vid': doc.vid })
+      .exec();
+  }
+});
+schema.set('toJSON', {
   versionKey: false,
   transform: function(doc, ret) {
     delete ret._id;
@@ -124,9 +139,9 @@ const createVideo = function (youtubeid) {
     })
 }
 
-const deleteVideo = function (id) {
+const deleteVideo = function (youtubeId) {
   return this
-    .findByIdAndDelete(id)
+    .findOneAndDelete({ youtubeId: youtubeId })
     .exec();
 }
 
@@ -136,8 +151,8 @@ const getVideoByYoutubeId = function (youtubeId) {
     .exec();
 }
 
-YoutubeVideoSchema.statics.create = createVideo;
-YoutubeVideoSchema.statics.delete = deleteVideo;
-YoutubeVideoSchema.statics.getByYoutubeId = getVideoByYoutubeId;
+schema.statics.create = createVideo;
+schema.statics.delete = deleteVideo;
+schema.statics.getByYoutubeId = getVideoByYoutubeId;
 
-module.exports = mongoose.model('YoutubeVideo', YoutubeVideoSchema);
+module.exports = mongoose.model('YoutubeVideo', schema);

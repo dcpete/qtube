@@ -20,6 +20,7 @@ router.post('/signup', validator.body(joi.userSignup), (req, res, next) => {
       const payload = {
         username: req.user.username,
         email: req.user.email,
+        uid: req.user.uid,
         token
       }
       const loc = `/api/users/${req.user.username}`;
@@ -41,6 +42,7 @@ router.post('/login', validator.body(joi.userLogin), (req, res, next) => {
       const payload = {
         username: req.user.username,
         email: req.user.email,
+        uid: req.user.uid,
         token
       }
       res.json(payload);

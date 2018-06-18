@@ -5,15 +5,15 @@ const _ = require('lodash');
 const createChannel = (req, res, next) => {
   Channel.create(req.body.name, req.user)
     .then(channel => {
-      const loc = `/api/channels/${channel._id}`;
+      const loc = `/api/channels/${channel.cid}`;
       res.location(loc).status(201).json(channel);
     })
     .catch(next);
 };
 
-// Get a specific channel by _id
+// Get a specific channel by cid
 const getChannelById = (req, res, next) => {
-  Channel.getByID(req.params.channelid, (error, channel) => {
+  Channel.getByID(req.params.cid, (error, channel) => {
     channelCallback(res, error, channel);
   });
 };
@@ -29,7 +29,7 @@ const getChannelBySearchTerm = (req, res, next) => {
 
 // Add a video to a channel
 const addVideoToChannel = (req, res, next) => {
-  Channel.addVideo(req.params._id, req.body)
+  Channel.addVideo(req.params.cid, req.body)
     .then(channel => {
       res.json(channel);
     })
@@ -38,7 +38,7 @@ const addVideoToChannel = (req, res, next) => {
 
 // Edit a specific channel
 const editChannel = (req, res, next) => {
-  Channel.edit(req.params._id, req.user, req.body)
+  Channel.edit(req.params.cid, req.user, req.body)
     .then(channel => {
       res.json(channel);
     })
@@ -47,7 +47,7 @@ const editChannel = (req, res, next) => {
 
 // Delete a specific channel
 const deleteChannel = (req, res, next) => {
-  Channel.delete(req.params._id, req.user)
+  Channel.delete(req.params.cid, req.user)
     .then(channel => {
       res.json(channel);
     })

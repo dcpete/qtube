@@ -16,7 +16,7 @@ const getUserByUsername = (req, res, next) => {
  * Update user
  */
 const editUser = (req, res, next) => {
-  User.edit(req.user._id, req.body)
+  User.edit(req.user.uid, req.body)
     .then(user => {
       res.json(user);
     })
@@ -27,7 +27,7 @@ const editUser = (req, res, next) => {
  * Delete a user
  */
 const deleteUser = (req, res, next) => {
-  User.delete(req.user._id)
+  User.delete(req.user.uid)
     .then(user => {
       res.json(user);
     })

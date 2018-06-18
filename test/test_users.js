@@ -14,6 +14,7 @@ describe("USERS (/api/users)", () => {
       password: testUser.password
     })
       .then(res => {
+        expect(res.status).to.equal(201);
         expect(res.body.token).to.exist;
         token = res.body.token;
       });
