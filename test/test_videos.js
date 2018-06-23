@@ -16,7 +16,7 @@ describe("VIDEOS (no direct api call)", () => {
   })
   
   it("should be able to create a video", () => {
-    return fn.createVideo(testYoutubeVideoId)  
+    return fn.createVideo(testYoutubeVideoId)
       .then(video => {
         expect(video).to.exist;
         expect(video.youtubeId).to.equal(testYoutubeVideoId);

@@ -49,7 +49,6 @@ describe("CHANNELS (/api/channels)", () => {
         return fn.createChannel(ownerToken, "test channel 2");
       })
       .then(res => {
-        console.log(res.error)
         expect(res.status).to.be.equal(201);
         expect(res.headers.location).to.exist;
         expect(res.body).to.exist;
@@ -83,7 +82,6 @@ describe("CHANNELS (/api/channels)", () => {
     }
     return fn.editChannel(ownerToken, testChannelUrl, body)
       .then(res => {
-        console.log(res.error)
         expect(res.status).to.be.equal(200);
         expect(res.body.name).to.be.equal(body.name);
       });
