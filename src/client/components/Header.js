@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Navbar,
-  NavbarBrand,
   NavbarToggler,
   Collapse,
   Nav,
@@ -13,13 +12,6 @@ import {
 class Header extends Component {
   constructor() {
     super();
-    this.handleLogIn = this.handleLogIn.bind(this);
-  }
-
-  handleLogIn() {
-    const email = 'testemail@test.com';
-    const password = 'this is my login password meow'
-    this.props.logIn(email, password);
   }
 
   render() {
@@ -27,6 +19,7 @@ class Header extends Component {
       collapsed,
       toggleNavbarCollapsed
     } = this.props;
+    
     return (
       <Navbar color="dark" dark expand="sm">
         <div className="container d-flex">
@@ -38,11 +31,19 @@ class Header extends Component {
             qtube
           </Link>
           <div className="ml-auto order-2 order-sm-3">
+          <Button
+              outline
+              color="warning"
+              className="mx-2"
+              onClick={() => this.props.openAuthModal('signup')}
+            >
+              Sign Up
+            </Button>
             <Button
               outline
               color="warning"
               className="mx-2"
-              onClick={this.handleLogIn}
+              onClick={() => this.props.openAuthModal('login')}
             >
               Log In
             </Button>

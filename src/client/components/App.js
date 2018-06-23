@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import HeaderContainer from '../containers/HeaderContainer';
 import MainContainer from '../containers/MainContainer';
+import QtubeModalContainer from '../containers/QtubeModalContainer';
 
 class App extends Component {
   render() {
@@ -9,6 +10,7 @@ class App extends Component {
       <div>
         <HeaderContainer />
         <MainContainer />
+        <QtubeModalContainer />
       </div>
     )
   }

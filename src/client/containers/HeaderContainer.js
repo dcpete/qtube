@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Header from '../components/Header';
-import { logIn } from '../actions/user_actions';
 import { toggleNavbarCollapsed } from '../actions/navbar_actions';
+import { openAuthModal } from '../actions/modal_actions';
 
 const mapStateToProps = function (state) {
   return { 
@@ -12,7 +12,7 @@ const mapStateToProps = function (state) {
 }
 
 const mapDispatchToProps = { 
-  logIn,
+  openAuthModal,
   toggleNavbarCollapsed
 };
 
