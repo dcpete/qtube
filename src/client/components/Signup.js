@@ -9,10 +9,10 @@ import {
 } from 'reactstrap';
 
 class Signup extends Component {
-  renderTextInput({input, placeholder}) {
+  renderTextInput({input, type, placeholder}) {
     return (
       <Input
-        type="text"
+        type={type}
         placeholder={placeholder}
         {...input}
       />
@@ -48,7 +48,7 @@ class Signup extends Component {
         </Label>
           <Field
             name="password"
-            type="text"
+            type="password"
             component={this.renderTextInput}
           />
         </FormGroup>

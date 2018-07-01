@@ -9,10 +9,10 @@ import {
 } from 'reactstrap';
 
 class Login extends Component {
-  renderTextInput({input, placeholder}) {
+  renderTextInput({input, type, placeholder}) {
     return (
       <Input
-        type="text"
+        type={type}
         placeholder={placeholder}
         {...input}
       />
@@ -27,7 +27,7 @@ class Login extends Component {
             Username or Email
           </Label>
           <Field
-            name="username"
+            name="usernameOrEmail"
             type="text"
             component={this.renderTextInput}
           />
@@ -38,7 +38,7 @@ class Login extends Component {
           </Label>
           <Field
             name="password"
-            type="text"
+            type="password"
             component={this.renderTextInput}
           />
           <p className="text-right">Forgot your password?</p>
