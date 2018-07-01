@@ -9,6 +9,7 @@ import {
 } from '../actions/user_actions';
 
 const initialState = {
+  isLoggedIn: false,
   isFetching: false,
   email: undefined,
   token: undefined,
@@ -27,6 +28,7 @@ export default (state = initialState, action) => {
     case LOG_IN_COMPLETED:
     case SIGN_UP_COMPLETED:
       return {
+        isLoggedIn: true,
         isFetching: false,
         email: action.payload.email,
         token: action.payload.token,
