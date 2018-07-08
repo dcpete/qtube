@@ -1,10 +1,31 @@
 import React, { Component } from 'react';
+import { Button } from 'reactstrap';
 
 class Channel extends Component {
+  constructor() {
+    super();
+  }
+
+  componentDidMount() {
+    this.setState(() => {
+      return {
+        player: new YT.Player('qtubePlayerIframe')
+      }
+    })
+  }
+
   render() {
     return (
       <div>
         <h1>Channel</h1>
+        <Button
+          color="primary"
+          onClick={() => {
+            this.state.player.loadVideoById({ 'videoId': 'NouZB6QuCys' });
+          }}
+        >
+          DARE
+        </Button>
         <hr />
         <div className="embed-responsive embed-responsive-16by9">
           <iframe
