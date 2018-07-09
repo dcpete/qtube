@@ -90,6 +90,9 @@ class Header extends Component {
               <NavItem className="px-2 py-2">
                 <Link to="/channel">Channel</Link>
               </NavItem>
+              <NavItem className="px-2 py-2">
+                <Link to="/search">Search</Link>
+              </NavItem>
             </Nav>
           </Collapse>
         </div>
