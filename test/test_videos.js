@@ -9,7 +9,7 @@ describe("VIDEOS (no direct api call)", () => {
   // https://www.youtube.com/watch?v=NouZB6QuCys
   const testYoutubeVideoId = "NouZB6QuCys";
   before(() => {
-    return mongoose.connect(dbconfig.uri)
+    return mongoose.connect(dbconfig.uri, { useNewUrlParser: true })
       .then(connection => {
         mongoose.Promise = global.Promise;
     });

@@ -5,47 +5,31 @@ const clean = require('clean-webpack-plugin');
 
 module.exports = {
   entry: {
-    main: './src/client/index.js',
-    vendor: [
-      'axios',
-      'es6-promise',
-      'lodash',
-      'react',
-      'react-dom',
-      'react-redux',
-      'react-router',
-      'react-router-dom',
-      'redux',
-      'redux-form',
-      'redux-thunk',
-    ]
+    main: './src/client/index.js'
   },
   optimization: {
     splitChunks: {
-      chunks: "async",
-      minSize: 30000,
-      minChunks: 1,
-      maxAsyncRequests: 5,
-      maxInitialRequests: 3,
-      automaticNameDelimiter: '~',
-      name: true,
       cacheGroups: {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
-          priority: -10
+          name: 'vendors',
+          chunks: 'all'
         },
-        default: {
-          minChunks: 2,
-          priority: -20,
-          reuseExistingChunk: true
+        static: {
+          test: /[\\/]src[\\/]static[\\/]/,
+          name: 'static',
+          chunks: 'all'
         }
       }
-    },
-  },  
+    }
+  },
   plugins: [
-    new clean(['dist']),
+    new clean({
+      verbose: true,
+      cleanOnceBeforeBuildPatterns: ['**/*', '!**.json'],
+    }),
     new html({
-      title: 'qtube',
+      title: `qtube`,
       template: 'src/client/static/assets/index.html'
     })
   ],
@@ -57,14 +41,22 @@ module.exports = {
   module: {
     rules: [
       {
+        type: 'javascript/auto',
+        test: /\.json$/,
+        use: [
+          'cache-loader',
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]'
+            }
+          }
+        ]
+      },
+      {
         exclude: /node_modules/,
-
         use: [{
           loader: 'babel-loader',
-
-          options: {
-            presets: ['react', 'env', 'stage-1']
-          }
         }]
       },
       {
@@ -91,11 +83,6 @@ module.exports = {
           loader: 'html-loader'
         }]
       }
-    ]
-  },
-  devServer: {
-    contentBase: path.join(__dirname, "dist"),
-    historyApiFallback: true,
-    port: 8080
+    ],
   }
 };

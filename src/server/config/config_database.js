@@ -1,3 +1,4 @@
 module.exports = {
-  'uri' : 'mongodb://localhost/qtube'
+  uri : 'mongodb://localhost/qtube',
+  'useNewUrlParser': 'true'
 };

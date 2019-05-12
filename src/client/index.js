@@ -16,9 +16,11 @@ const store = createStore(
   composeWithDevTools(applyMiddleware(thunk))
 );
 
+const getBasename = path => path.substr(0, path.lastIndexOf('/'));
+
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter>
+    <BrowserRouter basename={getBasename(window.location.pathname)}>
       <Switch>  
         <AppContainer />
       </Switch>
