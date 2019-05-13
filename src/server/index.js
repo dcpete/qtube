@@ -45,7 +45,7 @@ express.use(morgan('combined', { stream: accessLogStream }));
 express.use('/api', checkToken);
 
 // top-level routes
-express.use('/auth', authRoutes);
+express.use(['/auth', '/api/auth', '/qtube/api/auth'], authRoutes);
 express.use('/api', apiRoutes);
 
 if (express.get('env') === 'development') {

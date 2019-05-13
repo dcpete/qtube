@@ -10,12 +10,14 @@ export const LOG_IN_FAILED = 'LOG_IN_FAILED';
 export const LOG_IN_COMPLETED = 'LOG_IN_COMPLETED';
 export const LOG_OUT = 'LOG_OUT';
 
+const getBasename = path => path.substr(0, path.lastIndexOf('/'));
+
 export const signUp = (username, email, password) => {
   return (dispatch) => {
     dispatch({
       type: SIGN_UP_INITIATED
     });
-    const url = '/auth/signup';
+    const url = `${getBasename(window.location.pathname)}/api/auth/signup`;
     const data = {
       username,
       email,
@@ -43,7 +45,7 @@ export const logIn = (usernameOrEmail, password) => {
     dispatch({
       type: LOG_IN_INITIATED
     });
-    const url = '/auth/login';
+    const url = `${getBasename(window.location.pathname)}/api/auth/login`;
     const data = usernameOrEmail.includes('@')
       ? {
           email: usernameOrEmail,

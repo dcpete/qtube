@@ -9,37 +9,58 @@ import {
 } from 'reactstrap';
 
 class Login extends Component {
-  renderTextInput({input, type, placeholder}) {
-    return (
-      <Input
-        type={type}
-        placeholder={placeholder}
-        {...input}
-      />
-    );
+  constructor(props) {
+    super(props);
+    this.state = {
+      usernameOrEmail: "",
+      password: "",
+    }
+
+    this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
+    this.handleUsernameChange = this.handleUsernameChange.bind(this);
+    this.handlePasswordChange = this.handlePasswordChange.bind(this);
+  }
+
+  handleLoginSubmit(event) {
+    event.preventDefault();
+    this.props.logIn(this.state.usernameOrEmail, this.state.password)
+  }
+
+  handleUsernameChange(event) {
+    this.setState({
+      usernameOrEmail: event.target.value
+    })
+  }
+
+  handlePasswordChange(event) {
+    this.setState({
+      password: event.target.value
+    })
   }
 
   render() {
     return (
-      <Form onSubmit={this.props.handleSubmit}>
+      <Form onSubmit={this.handleLoginSubmit}>
         <FormGroup>
           <Label for="username">
             Username or Email
           </Label>
-          <Field
+          <Input
             name="usernameOrEmail"
             type="text"
-            component={this.renderTextInput}
+            disabled={this.props.isFetchingUser}
+            onChange={this.handleUsernameChange}
           />
         </FormGroup>
         <FormGroup>
           <Label for="password">
             Password
           </Label>
-          <Field
+          <Input
             name="password"
             type="password"
-            component={this.renderTextInput}
+            disabled={this.props.isFetchingUser}
+            onChange={this.handlePasswordChange}
           />
           <p className="text-right">Forgot your password?</p>
         </FormGroup>
@@ -48,6 +69,7 @@ class Login extends Component {
             block
             color="secondary"
             type="submit"
+            disabled={this.props.isFetchingUser}
           >
             Log In
           </Button>
