@@ -5,4 +5,4 @@ npm-debug.log
 .DS_Store
 
 # Ignore google configuration file
-#src/server/config/config_google.js
+src/server/config/config_google.js
