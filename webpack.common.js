@@ -1,11 +1,11 @@
 const path = require('path');
 const webpack = require('webpack');
 const html = require('html-webpack-plugin');
-const clean = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   entry: {
-    main: './src/client/index.js'
+    index: path.resolve(__dirname, './src/client/index.js'),
   },
   optimization: {
     splitChunks: {
@@ -24,13 +24,14 @@ module.exports = {
     }
   },
   plugins: [
-    new clean({
+    new CleanWebpackPlugin({
       verbose: true,
       cleanOnceBeforeBuildPatterns: ['**/*', '!**.json'],
+      cleanStaleWebpackAssets: false
     }),
     new html({
       title: `qtube`,
-      template: 'src/client/static/assets/index.html'
+      template: './src/client/static/assets/index.html'
     })
   ],
   output: {
