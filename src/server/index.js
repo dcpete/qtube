@@ -32,7 +32,7 @@ express.use(bodyParser.json());
 fs.existsSync(logConfig.directory) || fs.mkdirSync(logConfig.directory);
 
 // use a rotating write stream
-const accessLogStream = rfs('access.log', {
+const accessLogStream = rfs.createStream('access.log', {
   interval: logConfig.interval, // rotate daily
   path: logConfig.directory,
   maxFiles: logConfig.maxFiles

@@ -2,7 +2,7 @@ const express = require('express');
 const channelRoutes = require('./api/route_channels');
 const userRoutes = require('./api/route_users');
 const joi = require('../config/config_joi');
-const validator = require('express-joi-validation')({});
+const validator = require('express-joi-validation').createValidator({});
 
 const router = new express.Router();
 

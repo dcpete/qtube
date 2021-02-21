@@ -1,6 +1,6 @@
 const express = require('express');
 const _ = require('lodash');
-const validator = require('express-joi-validation')({});
+const validator = require('express-joi-validation').createValidator({});
 const joi = require('../config/config_joi');
 const User = require('../models/model_user');
 const signToken = require('../util/util_jwt').signToken;
